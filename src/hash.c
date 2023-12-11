@@ -36,13 +36,14 @@
 
 HashCtxt ctxt;
 
-#define BIN_VS "1.0.4"
-#define BIN_LC "17.05.2023"
+#define BIN_VS "1.0.5"
+#define BIN_LC "11.12.2023"
 
 
 int compare(int argc, WCHAR** argv);
 void printColored(CHAR* value, UINT16 attributes);
 
+void fileCB(wchar_t* file);
 int runList(int argc, WCHAR** argv);
 
 void printVersion()
@@ -243,7 +244,6 @@ int runList(int argc, WCHAR** argv)
     WCHAR* base_name = NULL;
     int files_i = 1;
     int i;
-    UINT8 hash_bytes[HASH_BYTES_LN];
 
     for ( i = files_i; i < argc; i++ )
     {
@@ -261,8 +261,7 @@ int runList(int argc, WCHAR** argv)
 
         if ( ntFileExists(full_path) )
         {
-            s = hashFileC(full_path, hash_bytes, (UINT16)ctxt.HashSize, &ctxt);
-            lPrintHash(hash_bytes, ctxt.HashSize, full_path, HASH_TYPE_STR);
+            fileCB(full_path);
         }
         else if ( ntDirExists(full_path) )
         {
@@ -281,8 +280,11 @@ clean:
 void fileCB(wchar_t* file)
 {
     UINT8 hash_bytes[HASH_BYTES_LN];
+    RtlZeroMemory(hash_bytes, HASH_BYTES_LN);
     DPrintW(L"fileCB: %ws\n", file);
-    hashFileC(file, hash_bytes, (UINT16)ctxt.HashSize, &ctxt);
+    INT s = hashFileC(file, hash_bytes, (UINT16)ctxt.HashSize, &ctxt);
+    if ( s != 0 )
+        return;
     lPrintHash(hash_bytes, ctxt.HashSize, file, HASH_TYPE_STR);
 }
 

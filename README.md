@@ -176,8 +176,8 @@ Calculates the hash sum of files or files in folders.
 The hash sum will be md5, sha128 or sha256 depending on the executed binary.
 
 ### version
-1.0.3  
-Last changed: 17.04.2023
+1.0.5  
+Last changed: 11.12.2023
 
 
 ### build
