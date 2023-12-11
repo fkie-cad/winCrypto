@@ -112,17 +112,6 @@
   
   <ItemDefinitionGroup Condition="'$(RunTimeLib)'=='Release'">
     <ClCompile>
-      <TreatWarningAsError>false</TreatWarningAsError>
-    </ClCompile>
-  </ItemDefinitionGroup>
-  <ItemDefinitionGroup Condition="'$(RunTimeLib)'=='Debug'">
-    <ClCompile>
-      <TreatWarningAsError>true</TreatWarningAsError>
-    </ClCompile>
-  </ItemDefinitionGroup>
-  
-  <ItemDefinitionGroup Condition="'$(RunTimeLib)'=='Release'">
-    <ClCompile>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
     </ClCompile>
   </ItemDefinitionGroup>

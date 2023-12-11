@@ -321,7 +321,7 @@ GOTO :ParseParams
     FOR /L %%i IN (0 1 %PROJ_ID_MAX%) DO  (
         echo|set /p="[!cmdparams[%%i]!] "
     )
-    echo|set /p="[/cln] [/d] [/r] [/dp <value>] [/dpf] [/epf] [/b <bitness>] [/pdb] [/rtl] [/v] [/h]"
+    echo|set /p="[/cln] [/d] [/r] [/dp <value>] [/dpf] [/epf] [/pdb] [/rtl] [/v] [/h]"
     exit /B 0
     
 

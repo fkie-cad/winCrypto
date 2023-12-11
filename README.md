@@ -1,17 +1,17 @@
 # Crypto utils
 Implementations of some useful crypto utils using the windows CNG API.
 
-## CONTENTS
-* [REQUIREMENTS](#requirements)
-* [BUILD STUFF](#build-stuff)
+## Contents
+* [Requirements](#requirements)
+* [Build Stuff](#build-stuff)
 * [AES](#aes)
 * [Base64](#base64)
 * [MD5, SHA1, SHA256](#md5,-sha1,-sha256)
 
-## REQUIREMENTS
+## Requirements
 - msbuild
 
-## BUILD STUFF
+## Build Stuff
 ```bash
 $ ./build.bat [/md5] [/sh1] [/sh2] [/b64] [/aes] [/hash] [/all] [/r] [/d] [/dp <flag>] [/b 32|64] [/rtl] [/pdb] [/pts <platformToolSet>] [/h]
 ```
