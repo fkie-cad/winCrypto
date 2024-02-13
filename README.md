@@ -7,6 +7,7 @@ Implementations of some useful crypto utils using the windows CNG API.
 * [AES](#aes)
 * [Base64](#base64)
 * [MD5, SHA1, SHA256](#md5,-sha1,-sha256)
+* [Copyright, Credits & Contact ](#Copyright,-Credits-&-Contact )
 
 ## Requirements
 - msbuild
@@ -171,13 +172,13 @@ $ base64 -d -ib 45434177 -pb -op %tmp%\file.txt
 
 
 
-## MD5, SHA1, SHA256
+## Md5, Sha1, Sha256
 Calculates the hash sum of files or files in folders.
 The hash sum will be md5, sha128 or sha256 depending on the executed binary.
 
 ### version
-1.0.5  
-Last changed: 11.12.2023
+1.0.6  
+Last changed: 13.02.2024  
 
 
 ### build
@@ -189,16 +190,18 @@ $ ./build.bat /sh2 # builds sha256.exe
 
 ### usage
 ```bash
-$ md5 [/h] [/c] path...
-$ sha1 [/h] [/c] path...
-$ sha256 [/h] [/c] path...
+$ md5 [/h] [/r] [/c] <path>...
+$ sha1 [/h] [/r] [/c] <path>...
+$ sha256 [/h] [/r] [/c] <path>...
 ```
 
 Options:  
+ * /r Do recursive folder walks.
  * /c Compare path1 with path2 or path1 with a sha256 value.
  * /h Print help.
- 
- **sha256 Examples**
+ * path: One or more pathes to files or dirs for hash calculation
+
+**sha256 Examples**
 ```bash
 # calculate sha256 of two files
 $ sha256 a/file a/nother/file
@@ -216,7 +219,7 @@ Use `md5` or `sha1` for the other hash types.
 
 
 
-## COPYRIGHT, CREDITS & CONTACT 
+## Copyright, Credits & Contact 
 Published under [GNU GENERAL PUBLIC LICENSE](LICENSE).
 
 #### author

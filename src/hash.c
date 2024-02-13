@@ -9,6 +9,8 @@
 #include "shared/Args.h"
 #include "files/FilesW.h"
 
+#define FLAG_RECURSIVE (0x1)
+#define FLAG_COMPARE (0x2)
 
 #define TYPE_MD5_STR L"Md5"
 #define TYPE_SHA1_STR L"Sha1"
@@ -30,21 +32,30 @@
     #define HASH_BYTES_LN SHA256_BYTES_LN
     #define HASH_STRING_LN SHA256_STRING_LN
 #else
+    #define HASH_TYPE_STR 0
+    #define BIN_NAME ""
+    #define HASH_BYTES_LN 0
+    #define HASH_STRING_LN 0
     #error No valid HASH_TYPE set: (5, 128, 256)
 #endif
 
+typedef struct _FCBParams {
+    uint32_t flags;
+    BOOL killed;
+} FCBParams, *PFCBParams;
 
 HashCtxt ctxt;
+HANDLE hStdout;
 
-#define BIN_VS "1.0.5"
-#define BIN_LC "11.12.2023"
+#define BIN_VS "1.0.6"
+#define BIN_LC "13.02.2024"
 
 
 int compare(int argc, WCHAR** argv);
 void printColored(CHAR* value, UINT16 attributes);
 
-void fileCB(wchar_t* file);
-int runList(int argc, WCHAR** argv);
+void fileCB(wchar_t* file, wchar_t* base_name, void* p);
+int runList(int argc, WCHAR** argv, ULONG Flags);
 
 void printVersion()
 {
@@ -56,7 +67,7 @@ void printVersion()
 
 void printUsage()
 {
-    printf("Usage: %ws [/h] [/c] path ...\n", BIN_NAME);
+    printf("Usage: %ws [/h] [/r] [/c] <path> ...\n", BIN_NAME);
 }
 
 void printHelp()
@@ -67,6 +78,7 @@ void printHelp()
     wprintf(L"\n");
     wprintf(L"Options:\n");
     wprintf(L" /c: Compare path1 with path2 or with a hash value.\n");
+    wprintf(L" /r: Do recursive folder walks.\n");
     wprintf(L" /h: Print this\n");
     wprintf(L" path: One or more pathes to files or dirs for hash calculation.\n");
 }
@@ -74,7 +86,7 @@ void printHelp()
 int __cdecl wmain(int argc, WCHAR** argv)
 {
     int s = 0;
-    BOOL compare_f = FALSE;
+    BOOL flags = 0;
 
     if ( argc < 2 )
     {
@@ -90,10 +102,16 @@ int __cdecl wmain(int argc, WCHAR** argv)
         }
         if ( IS_1C_ARG_W(argv[1], L'c') )
         {
-            compare_f = TRUE;
+            flags |= FLAG_COMPARE;
+        }
+        if ( IS_1C_ARG_W(argv[1], L'r') )
+        {
+            flags |= FLAG_RECURSIVE;
         }
     }
     
+    DPrint("flags: 0x%x\n", flags);
+
 #if HASH_TYPE == 5
     initHashCtxt(&ctxt, BCRYPT_MD5_ALGORITHM);
 #elif HASH_TYPE == 128
@@ -101,14 +119,16 @@ int __cdecl wmain(int argc, WCHAR** argv)
 #elif HASH_TYPE == 256
     initHashCtxt(&ctxt, BCRYPT_SHA256_ALGORITHM);
 #endif
+    
+    hStdout = GetStdHandle(STD_OUTPUT_HANDLE);
 
-    if ( compare_f )
+    if ( flags & FLAG_COMPARE )
     {
         s = compare(argc, argv);
     }
     else
     {
-        s = runList(argc, argv);
+        s = runList(argc, argv, flags);
     }
     
 
@@ -226,9 +246,7 @@ clean:
 
 void printColored(CHAR* value, UINT16 attributes)
 {
-    HANDLE hStdout;
     UINT16 wOldColorAttrs;
-    hStdout = GetStdHandle(STD_OUTPUT_HANDLE);
     CONSOLE_SCREEN_BUFFER_INFO csbiInfo;
     GetConsoleScreenBufferInfo(hStdout, &csbiInfo);
     wOldColorAttrs = csbiInfo.wAttributes;
@@ -237,16 +255,18 @@ void printColored(CHAR* value, UINT16 attributes)
     SetConsoleTextAttribute(hStdout, wOldColorAttrs);
 }
 
-int runList(int argc, WCHAR** argv)
+int runList(int argc, WCHAR** argv, ULONG Flags)
 {
     int s = 0;
     WCHAR full_path[MAX_PATH];
     WCHAR* base_name = NULL;
-    int files_i = 1;
+    int files_i = (Flags&FLAG_RECURSIVE) ? 2 : 1;
     int i;
 
     for ( i = files_i; i < argc; i++ )
     {
+        cropTrailingSlashW(argv[i]);
+
         DPrintW(L"file[%d]: %ws\n", i, argv[i]);
         memset(full_path, 0, MAX_PATH*2);
         s = ntGetFullPathName(argv[i], MAX_PATH, full_path, &base_name);
@@ -261,15 +281,15 @@ int runList(int argc, WCHAR** argv)
 
         if ( ntFileExists(full_path) )
         {
-            fileCB(full_path);
+            fileCB(full_path, NULL, NULL);
         }
         else if ( ntDirExists(full_path) )
         {
-            s = hashDir(full_path);
+            s = hashDir(full_path, Flags);
         }
         else
         {
-            EPrintW(L"Path \"%s\" does not exist!", full_path);
+            EPrintW(L"Path \"%s\" does not exist!\n", full_path);
         }
     }
 
@@ -277,8 +297,9 @@ clean:
     return s;
 }
 
-void fileCB(wchar_t* file)
+void fileCB(wchar_t* file, wchar_t* base_name, void* p)
 {
+    //PFCBParams params = (PFCBParams)p;
     UINT8 hash_bytes[HASH_BYTES_LN];
     RtlZeroMemory(hash_bytes, HASH_BYTES_LN);
     DPrintW(L"fileCB: %ws\n", file);
@@ -288,15 +309,21 @@ void fileCB(wchar_t* file)
     lPrintHash(hash_bytes, ctxt.HashSize, file, HASH_TYPE_STR);
 }
 
-int hashDir(_In_ WCHAR* Path)
+int hashDir(_In_ WCHAR* Path, _In_ ULONG Flags)
 {
-    DPrintW(L"hashDir(%s)\n", Path);
+    DPrintW(L"hashDir(%s, 0x%x)\n", Path, Flags);
     int s = 0;
-    FileCallback cb;
-    cb = &fileCB;
-    //CHAR* types[2] = { ".exe", ".dll" };
+    
+    FCBParams params = { 
+        .flags=Flags, 
+        .killed=FALSE
+    };
 
-    actOnFilesInDir(Path, cb, NULL, TRUE);
+    uint32_t act_flags = 0;
+    if ( Flags & FLAG_RECURSIVE )
+        act_flags |= FILES_FLAG_RECURSIVE;
+
+    actOnFilesInDirW(Path, &fileCB, NULL, act_flags, &params, &(params.killed));
 
     return s;
 }
@@ -304,11 +331,18 @@ int hashDir(_In_ WCHAR* Path)
 void lPrintHash(_In_ PUINT8 Bytes, _In_ ULONG Size, _In_ WCHAR* File, _In_ PWCHAR Type)
 {
     ULONG i;
+
+    UINT16 wOldColorAttrs;
+    CONSOLE_SCREEN_BUFFER_INFO csbiInfo;
     
     if ( wcslen(File) < 4 )
         return;
-
+    
+    GetConsoleScreenBufferInfo(hStdout, &csbiInfo);
+    wOldColorAttrs = csbiInfo.wAttributes;
+    SetConsoleTextAttribute(hStdout, FOREGROUND_INTENSITY);
     wprintf(L"%ws of %s:\n", Type, &File[4]);
+    SetConsoleTextAttribute(hStdout, wOldColorAttrs);
     for (i = 0; i < Size; i++)
     {
         wprintf(L"%02x", Bytes[i]);

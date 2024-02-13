@@ -11,7 +11,8 @@
 
 
 INT hashDir(
-    _In_ WCHAR* Path
+    _In_ WCHAR* Path,
+    _In_ ULONG Flags
 );
 
 VOID lPrintHash(

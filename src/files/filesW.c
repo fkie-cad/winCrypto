@@ -10,11 +10,13 @@
 
 
 
-BOOL actOnFilesInDir(
-    _In_ const WCHAR* Path, 
+int actOnFilesInDirW(
+    _In_ WCHAR* Path, 
     _In_ FileCallback Cb, 
-    _In_opt_ const char** Types, 
-    _In_ BOOL Recursive
+    _In_opt_ char** Types, 
+    _In_ uint32_t Flags, 
+    _In_ void* Params, 
+    _In_ int* Killed
 )
 {
     HANDLE hFind = INVALID_HANDLE_VALUE;
@@ -23,33 +25,38 @@ BOOL actOnFilesInDir(
     wchar_t spec[MAX_PATH];
     wchar_t* path;
     Fifo directories;
-    BOOL s = TRUE;
+    int s = 1;
     PFifoEntry entry;
     (Types);
-
+    int recursive = (Flags & FILES_FLAG_RECURSIVE) > 0;
+    DPrint("Flags: %u\n", Flags);
+    DPrint("recursive: %u\n", recursive);
+    
     FPrint();
     DPrintW(L"  Path: %s\n", Path);
-    //cropTrailingSlash(Path);
+
+    if ( !ntDirExists(Path) )
+    {
+        return 0;
+    }
 
     Fifo_init(&directories);
     Fifo_push(&directories, Path, (size_t)wcslen(Path)*2+2);
 
-    while (!Fifo_empty(&directories))
+    while (!Fifo_empty(&directories) && !(*Killed))
     {
         entry = Fifo_front(&directories);
         path = (WCHAR*)entry->value;
-
+        
         DPrintW(L" - path: %ws\n", path);
         memset(spec, 0, MAX_PATH * 2);
         StringCchPrintfW(spec, MAX_PATH, L"%ws\\%ws", path, mask);
-        spec[MAX_PATH - 1] = 0;
         DPrintW(L" - spec: %s\n", spec);
 
         hFind = FindFirstFileW(spec, &ffd);
-        if (hFind == INVALID_HANDLE_VALUE)
+        if ( hFind == INVALID_HANDLE_VALUE )
         {
-            wprintf(L" - ERROR (0x%x): hfinf\n", GetLastError());
-            s = false;
+            s = 0;
             break;
         }
         do
@@ -62,8 +69,11 @@ BOOL actOnFilesInDir(
                 DPrintW(L" - - ffd.cFileName: %ws\n", ffd.cFileName);
                 StringCchPrintfW(spec, MAX_PATH, L"%ws\\%s", path, ffd.cFileName);
                 spec[MAX_PATH - 1] = 0;
-                if ( (ffd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) && Recursive)
+                if ( (ffd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) )
                 {
+                    if ( !recursive )
+                        continue;
+                    
                     DPrintW(L" - - dir: %ws\n", spec);
                     s = (BOOL)Fifo_push(&directories, spec, (size_t)wcslen(spec) * 2 + 2);
                     DPrintW(L" - - fifo size: %d\n", s);
@@ -76,16 +86,16 @@ BOOL actOnFilesInDir(
                 else
                 {
                     DPrintW(L" - - file: %ws\n", spec);
-                    Cb(spec);
+                    Cb(spec, ffd.cFileName, Params);
                 }
             }
         }
-        while ( FindNextFileW(hFind, &ffd) != 0 );
+        while ( FindNextFileW(hFind, &ffd) != 0 && !(*Killed));
 
-        if ( GetLastError() != ERROR_NO_MORE_FILES )
+        if (GetLastError() != ERROR_NO_MORE_FILES)
         {
             FindClose(hFind);
-            s = TRUE;
+            s = 1;
             break;
         }
 
@@ -357,4 +367,17 @@ clean:
         NtClose(file);
 
     return status;
+}
+
+void cropTrailingSlashW(_Inout_ wchar_t* path)
+{
+    size_t n = wcslen(path);
+    if ( n == 0 )
+        return;
+    if ( path[n-1] == L'/' )
+        path[n-1] = 0;
+#ifdef _WIN32
+    if ( path[n-1] == L'\\' )
+        path[n-1] = 0;
+#endif
 }

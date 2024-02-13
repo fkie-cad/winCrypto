@@ -3,7 +3,10 @@
 
 #include <windows.h>
 
+#include <stdint.h>
+
 #include "../inc/nt.h"
+#include "FilesFlags.h"
 
 
 
@@ -14,7 +17,7 @@
 
 #define NT_PATH_PREFIX_W (0x005c003f003f005c)
 
-typedef void (*FileCallback)(WCHAR*);
+typedef void (*FileCallback)(wchar_t*, wchar_t*, void*);
 //typedef bool (*Condition)(WCHAR*);
 
 
@@ -27,11 +30,13 @@ typedef void (*FileCallback)(WCHAR*);
 * @param    Types char** A white list of file types to search for. Not implemented yet.
 * @param    Recursive BOOL Do a "recursive" search including all subdirectories.
 */
-BOOL actOnFilesInDir(
-    _In_ const WCHAR* Path, 
+BOOL actOnFilesInDirW(
+    _In_ WCHAR* Path, 
     _In_ FileCallback Cb, 
-    _In_opt_ const char** Types, 
-    _In_ BOOL Recursive
+    _In_opt_ char** Types, 
+    _In_ uint32_t Flags, 
+    _In_ void* Params, 
+    _In_ int* Killed
 );
 
 ULONG ntGetFullPathName(
@@ -70,6 +75,10 @@ NTSTATUS ntGetFileBytes(
     _In_ PWCHAR Path, 
     _Inout_ PUINT8* Output, 
     _Inout_ PULONG OutputSize
+);
+
+void cropTrailingSlashW(
+    _Inout_ wchar_t* path
 );
 
 #endif
