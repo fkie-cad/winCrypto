@@ -29,8 +29,6 @@ int actOnFilesInDirW(
     PFifoEntry entry;
     (Types);
     int recursive = (Flags & FILES_FLAG_RECURSIVE) > 0;
-    DPrint("Flags: %u\n", Flags);
-    DPrint("recursive: %u\n", recursive);
     
     FPrint();
     DPrintW(L"  Path: %s\n", Path);
@@ -90,7 +88,7 @@ int actOnFilesInDirW(
                 }
             }
         }
-        while ( FindNextFileW(hFind, &ffd) != 0 && !(*Killed));
+        while ( FindNextFileW(hFind, &ffd) != 0 && !(*Killed) );
 
         if (GetLastError() != ERROR_NO_MORE_FILES)
         {

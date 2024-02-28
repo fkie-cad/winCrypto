@@ -266,7 +266,7 @@ BOOL parseArgs(_In_ INT argc, _In_reads_(argc) CHAR** argv, _Out_ PCMD_PARAMS Pa
         {
             Params->Flags |= FLAG_ENCODE;
         }
-        else if ( IS_2C_ARG(arg, 'ip') )
+        else if ( IS_2C_ARG(arg, 'if') )
         {
             BREAK_ON_NOT_A_VALUE(val1, s, "missing path\n");
             if ( Params->BytesSize != 0 )
@@ -289,7 +289,7 @@ BOOL parseArgs(_In_ INT argc, _In_reads_(argc) CHAR** argv, _Out_ PCMD_PARAMS Pa
 
             i++;
         }
-        else if ( IS_2C_ARG(arg, 'op') )
+        else if ( IS_2C_ARG(arg, 'of') )
         {
             BREAK_ON_NOT_A_VALUE(val1, s, "missing path\n");
             
@@ -714,7 +714,7 @@ void printVersion()
 
 void printUsage()
 {
-    printf("Usage: %s [/d|/e] [/ia|/iu|/ib|/ip <value>] [/op <path>] [/pwa|/pwu|/pwb] [/iva|/ivu|/ivb] [/p*] [/v] [/h]\n", BN);
+    printf("Usage: %s [/d|/e] [/ia|/iu|/ib|/if <value>] [/of <path>] [/pwa|/pwu|/pwb] [/iva|/ivu|/ivb] [/p*] [/v] [/h]\n", BN);
 }
 
 void printHelp()
@@ -740,10 +740,10 @@ void printHelp()
     printf(" /ib: Input bytes as hex string. If set it's the source of /e or /d.\n");
     printf(" /ia: Input ascii string. If set it's the source of /e.\n");
     printf(" /iu: Input unicode string. If set it's the source of /e.\n");
-    printf(" /ip: Path to a file. If set it's the source of /e or /d.\n");
+    printf(" /if: Path to a file. If set it's the source of /e or /d.\n");
     printf("Output:\n");
-    printf(" /op: Path to a file. If set the result of /e or /d will be written to it.\n");
-    printf(" /p*: Print result of /e or /d even if /op is set.\n");
+    printf(" /of: Path to a file. If set the result of /e or /d will be written to it.\n");
+    printf(" /p*: Print result of /e or /d even if /of is set.\n");
     printf("   /pa: Print as ascii string.\n");
     printf("   /pb: Print in plain bytes (default).\n");
     printf("   /pc8: Print in cols of Address | bytes | ascii chars.\n");

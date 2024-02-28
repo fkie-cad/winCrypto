@@ -37,7 +37,7 @@ $ ./build.bat /aes
 
 ### usage
 ```bash
-$ aes [/d|/e] [/ia|/iu|/ib|/ip <value>] [/op <path>] [/pwa|/pwu|/pwb] [/iva|/ivu|/ivb] [/p*] [/v]
+$ aes [/d|/e] [/ia|/iu|/ib|/if <value>] [/of <path>] [/pwa|/pwu|/pwb] [/iva|/ivu|/ivb] [/p*] [/v]
 ```
 
 **Modes:**
@@ -60,11 +60,11 @@ $ aes [/d|/e] [/ia|/iu|/ib|/ip <value>] [/op <path>] [/pwa|/pwu|/pwb] [/iva|/ivu
 - /ib: Input bytes as hex string. If set it's the source of /e or /d.
 - /ia: Input ascii string. If set it's the source of /e.
 - /iu: Input unicode string. If set it's the source of /e.
-- /ip: Path to a file. If set it's the source of /e or /d.
+- /if: Path to a file. If set it's the source of /e or /d.
 
 **Output:**
-- /op: Path to a file. If set the result of /e or /d will be written to it.
-- /p*: Print result of /e or /d even if /op is set.
+- /of: Path to a file. If set the result of /e or /d will be written to it.
+- /p*: Print result of /e or /d even if /of is set.
     - /pa: Print as ascii string.
     - /pb: Print in plain bytes (default).
     - /pc8: Print in cols of Address | bytes | ascii chars.
@@ -79,16 +79,16 @@ $ aes [/d|/e] [/ia|/iu|/ib|/ip <value>] [/op <path>] [/pwa|/pwu|/pwb] [/iva|/ivu
  **Examples**
 ```bash
 # encrypt a/file into a/nother/file with random password and initial vector
-$ aes /e /ip a/file /op a/nother/file 
+$ aes /e /if a/file /of a/nother/file 
 
 # encrypt a/file into a/nother/file with given password and initial vector
-$ aes /e /ip a/file /op a/nother/file /pwa secret /iva initial 
+$ aes /e /if a/file /of a/nother/file /pwa secret /iva initial 
 
 # decrypt a/file into a/nother/file with given password and initial vector
-$ aes /d /ip a/file /op a/nother/file /pwa secret /iva initial 
+$ aes /d /if a/file /of a/nother/file /pwa secret /iva initial 
 
 # decrypt a/file and print result to console
-$ aes /d /ip a/file /pwa secret /iva initial
+$ aes /d /if a/file /pwa secret /iva initial
 
 # encrypt ascii string "bla" with random password and initial vector and print result to the console
 $ aes /e /ia bla 
@@ -97,7 +97,7 @@ $ aes /e /ia bla
 $ aes /e /ib 102030 /pc8 
 
 # decrypt input bytes, print result as col 8 and write it to file
-$ aes /d /ib 3e9a37c7e2450d4fe0a806142da1dddc /pc8 /op %tmp%\file.txt /pwa bla /iva blub 
+$ aes /d /ib 3e9a37c7e2450d4fe0a806142da1dddc /pc8 /of %tmp%\file.txt /pwa bla /iva blub 
 ```
 
 
@@ -120,7 +120,7 @@ $ ./build.bat /b64
 
 ### usage
 ```bash
-$ base64 [/d] [/e] [/ib <bytes>] [/is <string>] [/ip <path>] [/op <path>] [/p*] [/h]
+$ base64 [/d] [/e] [/ib <bytes>] [/is <string>] [/if <path>] [/of <path>] [/p*] [/h]
 ```
 
 **Modes:**  
@@ -130,15 +130,15 @@ $ base64 [/d] [/e] [/ib <bytes>] [/is <string>] [/ip <path>] [/op <path>] [/p*] 
 **Input:**  
 * /ib: Input bytes as hex string. If set it's the source of /e or /d.
 * /is: Input string. If set it's the source of /e or /d.
-* /ip: Path to a file. If set it's the source of /e or /d.
+* /if: Path to a file. If set it's the source of /e or /d.
 
 **Format:**  
 * /cr: Insert line feeds (LF / 0x0A) into encoded string.
 * /crlf: Insert carriage return/line feed (CR LF / 0x0D 0x0A) into encoded string.
  
 **Output:**  
-* /op: Path to a file. If set the result of /e or /d will be written to it.
-* /p*: Print result of /e or /d even if /op is set.
+* /of: Path to a file. If set the result of /e or /d will be written to it.
+* /p*: Print result of /e or /d even if /of is set.
   * /pa: Print as ascii string (default).
   * /pb: Print in plain bytes.
   * /pc8: Print in cols of Address | bytes | ascii chars.
@@ -152,13 +152,13 @@ $ base64 [/d] [/e] [/ib <bytes>] [/is <string>] [/ip <path>] [/op <path>] [/p*] 
  **Examples**
 ```bash
 # encode a/file into a/nother/file
-$ base64 /e -ip a/file -op a/nother/file 
+$ base64 /e -if a/file -of a/nother/file 
 
 # decode a/file into a/nother/file
-$ base64 /d -ip a/file -op a/nother/file 
+$ base64 /d -if a/file -of a/nother/file 
 
 # decode a/file and print result to console
-$ base64 /d -ip a/file 
+$ base64 /d -if a/file 
 
 # encode ascii string "bla" and print result to the console
 $ base64 /e -is bla 
@@ -167,7 +167,7 @@ $ base64 /e -is bla
 $ base64 -e -ib 102030 -pc8 
 
 # decode input bytes 45434177, print result as bytes and write it to a/nother/file
-$ base64 -d -ib 45434177 -pb -op %tmp%\file.txt
+$ base64 -d -ib 45434177 -pb -of %tmp%\file.txt
 ```
 
 

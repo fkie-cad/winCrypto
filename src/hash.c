@@ -110,8 +110,6 @@ int __cdecl wmain(int argc, WCHAR** argv)
         }
     }
     
-    DPrint("flags: 0x%x\n", flags);
-
 #if HASH_TYPE == 5
     initHashCtxt(&ctxt, BCRYPT_MD5_ALGORITHM);
 #elif HASH_TYPE == 128

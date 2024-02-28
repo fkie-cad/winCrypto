@@ -118,7 +118,7 @@
     for ( UINT64 _i_ = 0; _i_ < _s_; _i_+=0x10 ) \
     { \
         UINT64 _end_ = (_i_+0x10<_s_)?(_i_+0x10):(_s_); \
-        ULONG _gap_ = (_i_+0x10<=_s_) ? 0 : ((0x10+_i_-_s_)*3); \
+        ULONG _gap_ = (_i_+0x10<=_s_) ? 0 : (ULONG)((0x10+_i_-_s_)*3); \
         printf("%p  ", (((PUINT8)_b_)+_i_)); \
          \
         for ( UINT64 _j_ = _i_; _j_ < _end_; _j_++ ) \
@@ -152,7 +152,7 @@
     for ( UINT64 _i_ = 0; _i_ < _s_; _i_+=0x10 ) \
     { \
         UINT64 _end_ = (_i_+0x10<_s_)?(_i_+0x10):(_s_); \
-        ULONG _gap_ = (_i_+0x10<=_s_) ? 0 : ((0x10+_i_-_s_)/2*5); \
+        ULONG _gap_ = (_i_+0x10<=_s_) ? 0 : (ULONG)((0x10+_i_-_s_)/2*5); \
         printf("%p  ", (((PUINT8)_b_)+_i_)); \
          \
         for ( UINT64 _j_ = _i_; _j_ < _end_; _j_+=2 ) \
