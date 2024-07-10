@@ -183,7 +183,7 @@ BOOLEAN ntPathExists(
     InitializeObjectAttributes(
         &objAttr, 
         &uName, 
-        OBJ_KERNEL_HANDLE | OBJ_CASE_INSENSITIVE, 
+        OBJ_CASE_INSENSITIVE, 
         NULL, 
         NULL
     );
@@ -230,7 +230,7 @@ NTSTATUS ntOpenFile(
     InitializeObjectAttributes(
         &objAttr, 
         &uni_Filename, 
-        OBJ_CASE_INSENSITIVE | OBJ_KERNEL_HANDLE, 
+        OBJ_CASE_INSENSITIVE, 
         NULL, 
         NULL
     );
@@ -244,18 +244,18 @@ NTSTATUS ntOpenFile(
             CreateDisposion = FILE_OPEN_IF;
         
     status = NtCreateFile(
-        Handle, 
-        OpenAccess, 
-        &objAttr, 
-        &iosb, 
-        NULL, 
-        FILE_ATTRIBUTE_NORMAL, 
-        FILE_SHARE_READ, 
-        CreateDisposion,
-        FILE_SYNCHRONOUS_IO_NONALERT, 
-        NULL,
-        0
-    );
+                Handle, 
+                OpenAccess, 
+                &objAttr, 
+                &iosb, 
+                NULL, 
+                FILE_ATTRIBUTE_NORMAL, 
+                FILE_SHARE_READ, 
+                CreateDisposion,
+                FILE_SYNCHRONOUS_IO_NONALERT, 
+                NULL,
+                0
+            );
 
     return status;
 }

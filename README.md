@@ -166,7 +166,7 @@ $ base64 /e -is bla
 # encode input bytes 102030 and print result as col 8 print
 $ base64 -e -ib 102030 -pc8 
 
-# decode input bytes 45434177, print result as bytes and write it to a/nother/file
+# decode input bytes 45434177, print result as bytes and write it to file
 $ base64 -d -ib 45434177 -pb -of %tmp%\file.txt
 ```
 
