@@ -152,7 +152,7 @@ GOTO :ParseParams
     ) ELSE (
     IF /i "%~1" neq "" (
         echo Unknown option : "%~1"
-    )
+    ))
     
     :reParseParams
     SHIFT
