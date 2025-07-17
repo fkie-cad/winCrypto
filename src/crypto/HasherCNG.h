@@ -18,20 +18,23 @@
 #define SHA256_STRING_LN (0x40)
 #define SHA256_STRING_BUFFER_LN (0x41)
 
-
+#pragma pack(1)
 typedef struct HashCtxt {
-    BCRYPT_ALG_HANDLE Alg;
-    BCRYPT_HASH_HANDLE Hash;
-    NTSTATUS Status;
-    ULONG DataSize;
-    ULONG HashSize;
-    ULONG HashObjectSize;
-    PUINT8 HashObject;
-} 
+    BCRYPT_ALG_HANDLE Alg; // 0
+    BCRYPT_HASH_HANDLE Hash; // 8
+    NTSTATUS Status; // 10
+    ULONG DataSize; // 14
+    ULONG HashSize; // 18
+    ULONG HashObjectSize; // 1C
+    PUINT8 HashObject; // 20
+    ULONG Flags; // 28
+    ULONG Padding; // 2C
+} // 30
 HashCtxt, *PHashCtxt,
 Md5Ctxt, *PMd5Ctxt,
 Sha1Ctxt, *PSha1Ctxt,
 Sha256Ctxt, *PSha256Ctxt;
+#pragma pack()
 
 
 
@@ -39,271 +42,403 @@ Sha256Ctxt, *PSha256Ctxt;
 extern "C"{
 #endif
 
-
+/**
+ * Init SHA1 context object.
+ * 
+ * Open algorithm provider.
+ * Get hash, object and data size.
+ * Allocate hash object.
+ * 
+ * @param ctxt PSha256Ctxt Context object to be filled.
+ */
 NTSTATUS initSha1(
-    _Out_ PSha1Ctxt Ctxt
+    _Out_ PSha1Ctxt ctxt
 );
 
+/**
+ * Init SHA256 context object.
+ * 
+ * Open algorithm provider.
+ * Get hash, object and data size.
+ * Allocate hash object.
+ * 
+ * @param ctxt PSha256Ctxt Context object to be filled.
+ */
 NTSTATUS initSha256(
-    _Out_ PSha256Ctxt Ctxt
+    _Out_ PSha256Ctxt ctxt
 );
 
+/**
+ * Init MD5 context object.
+ * 
+ * Open algorithm provider.
+ * Get hash, object and data size.
+ * Allocate hash object.
+ * 
+ * @param ctxt PSha256Ctxt Context object to be filled.
+ */
 NTSTATUS initMd5(
-    _Out_ PMd5Ctxt Ctxt
+    _Out_ PMd5Ctxt ctxt
 );
 
+/**
+ * Init hash context object.
+ * 
+ * Open algorithm provider.
+ * Get hash, object and data size.
+ * Allocate hash object.
+ * 
+ * @param AlgId PWCHAR Hash algorithm id.
+ * @param Flags ULONG Provider flags like: BCRYPT_PROV_DISPATCH, BCRYPT_HASH_REUSABLE_FLAG.
+ * @param ctxt PSha256Ctxt Context object to be filled.
+ */
 NTSTATUS initHashCtxt(
-    _Out_ PHashCtxt Ctxt, 
-    _In_ PWCHAR AlgId
+    _In_ PWCHAR AlgId, 
+    _In_ ULONG Flags, 
+    _Out_ PHashCtxt ctxt
 );
 
+/**
+ * Clean SHA1 hash context object.
+ * 
+ * Close algorithm provider.
+ * Destroy hash object.
+ * 
+ * @param ctxt PSha256Ctxt Context object to be used.
+ */
 NTSTATUS cleanSha1(
-    _Inout_ PSha1Ctxt Ctxt);
+    _Inout_ PSha1Ctxt ctxt);
 
+/**
+ * Clean SHA256 hash context object.
+ * 
+ * Close algorithm provider.
+ * Destroy hash object.
+ * 
+ * @param ctxt PSha256Ctxt Context object to be used.
+ */
 NTSTATUS cleanSha256(
-    _Inout_ PSha256Ctxt Ctxt
+    _Inout_ PSha256Ctxt ctxt
 );
 
+/**
+ * Clean MD5 hash context object.
+ * 
+ * Close algorithm provider.
+ * Destroy hash object.
+ * 
+ * @param ctxt PSha256Ctxt Context object to be used.
+ */
 NTSTATUS cleanMd5(
-    _Inout_ PMd5Ctxt Ctxt
+    _Inout_ PMd5Ctxt ctxt
 );
 
+/**
+ * Clean hash context object.
+ * 
+ * Close algorithm provider.
+ * Destroy hash object.
+ * 
+ * @param ctxt PSha256Ctxt Context object to be used.
+ */
 NTSTATUS cleanHashCtxt(
-    _Inout_ PHashCtxt Ctxt
+    _Inout_ PHashCtxt ctxt
 );
 
 
 /**
- * Create sha256 Hash of a given file.
- * Using a FILE* to open the file.
+ * Create hash of a given file.
  *
- * @param   Path char* the input file path
- * @param   HashBytes PUINT8 The input Hash bytes
- * @param   HashSize ULONG Size of the HashBytes.
+ * @param   AlgId PWCHAR Hash algorithm id.
+ * @param   path PWCHAR The input file path
+ * @param   hash_bytes PUINT8 The hash bytes buffer
+ * @param   hash_bytes_size UINT16 Size of the hash_bytes buffer.
+ * @return  NTSTATUS the success state
+ */
+NTSTATUS hashFile(
+    _In_ PWCHAR AlgId,
+    _In_ PWCHAR path, 
+    _Out_ PUINT8 hash_bytes, 
+    _In_ UINT16 hash_bytes_size
+);
+
+/**
+ * Create hash of a given file.
+ *
+ * @param   path PWCHAR the input file path
+ * @param   hash_bytes PUINT8 The hash bytes buffer
+ * @param   hash_bytes_size UINT16 Size of the hash_bytes buffer.
+ * @param   ctxt PHashCtxt The initialized hash context object.
+ * @return  NTSTATUS the success state
+ */
+NTSTATUS hashFileC(
+    _In_ PWCHAR path, 
+    _Out_ PUINT8 hash_bytes, 
+    _In_ UINT16 hash_bytes_size, 
+    _In_ PHashCtxt ctxt
+);
+
+/**
+ * Create hash of a given buffer.
+ *
+ * @param   AlgId PWCHAR Hash algorithm id.
+ * @param   buffer UINT8* the input buffer
+ * @param   buffer_ln SIZE_T size of buffer
+ * @param   hash_bytes PUINT8 The hash bytes buffer
+ * @param   hash_bytes_size UINT16 Size of the hash_bytes buffer.
+ * @return  NTSTATUS the success state
+ */
+NTSTATUS hashBuffer(
+    _In_ PWCHAR AlgId, 
+    _In_ PUINT8 buffer, 
+    _In_ SIZE_T buffer_ln, 
+    _Out_ PUINT8 hash_bytes, 
+    _In_ UINT16 hash_bytes_size
+);
+
+/**
+ * Create hash of a given buffer.
+ *
+ * @param   buffer UINT8* the input buffer
+ * @param   buffer_ln SIZE_T size of buffer
+ * @param   hash_bytes PUINT8 The hash bytes buffer
+ * @param   hash_bytes_size UINT16 Size of the hash_bytes buffer.
+ * @return  ctxt PHashCtxt initialized HashCtxt
+ * @return  NTSTATUS the success state
+ */
+NTSTATUS hashBufferC(
+    _In_ PUINT8 buffer, 
+    _In_ SIZE_T buffer_ln, 
+    _Out_ PUINT8 hash_bytes, 
+    _In_ UINT16 hash_bytes_size, 
+    _In_ PHashCtxt ctxt
+);
+
+/**
+ * Create sha256 hash of a given file.
+ *
+ * @param   path PWCHAR the input file path
+ * @param   hash_bytes PUINT8 The hash bytes buffer
+ * @param   hash_bytes_size UINT16 Size of the hash_bytes buffer.
  * @return  NTSTATUS the success state
  */
 NTSTATUS sha256File(
-    _In_ PWCHAR Path, 
-    _Out_ PUINT8 HashBytes, 
-    _In_ UINT16 HashBytesSize
+    _In_ PWCHAR path, 
+    _Out_ PUINT8 hash_bytes, 
+    _In_ UINT16 hash_bytes_size
 );
 
 
 /**
- * Create sha256 Hash of a given file.
- * Using a FILE* to open the file.
+ * Create sha256 hash of a given file.
  *
- * @param   Path char* the input file path
- * @param   HashBytes PUINT8 The input Hash bytes
- * @param   HashSize ULONG Size of the HashBytes.
- * @return  Ctxt PSha256Ctxt initialized Sha256Ctxt
+ * @param   path PWCHAR the input file path
+ * @param   hash_bytes PUINT8 The hash bytes buffer
+ * @param   hash_bytes_size UINT16 Size of the hash_bytes buffer.
+ * @return  ctxt PSha256Ctxt initialized Sha256Ctxt
  * @return  NTSTATUS the success state
  */
 NTSTATUS sha256FileC(
-    _In_ PWCHAR Path, 
-    _Out_ PUINT8 HashBytes, 
-    _In_ UINT16 HashBytesSize, 
-    _In_ PSha256Ctxt Ctxt
+    _In_ PWCHAR path, 
+    _Out_ PUINT8 hash_bytes, 
+    _In_ UINT16 hash_bytes_size, 
+    _In_ PSha256Ctxt ctxt
 );
 
 /**
- * Create sha256 Hash of a given Buffer.
+ * Create sha256 hash of a given buffer.
  *
- * @param   Buffer UINT8* the input Buffer
- * @param   BufferSize UINT32 size of Buffer
- * @param   PUINT8 HashBytes, 
- * @param   HashBytesSize ULONG Size of the HashBytes.
+ * @param   buffer UINT8* the input buffer
+ * @param   buffer_ln SIZE_T size of buffer
+ * @param   hash_bytes PUINT8 The hash bytes buffer
+ * @param   hash_bytes_size UINT16 Size of the hash_bytes buffer.
  * @return  NTSTATUS the success state
  */
 NTSTATUS sha256Buffer(
-    _In_ UINT8* Buffer, 
-    _In_ SIZE_T BufferSize, 
-    _Out_ PUINT8 HashBytes, 
-    _In_ UINT16 HashBytesSize
+    _In_ PUINT8 buffer, 
+    _In_ SIZE_T buffer_ln, 
+    _Out_ PUINT8 hash_bytes, 
+    _In_ UINT16 hash_bytes_size
 );
 
 /**
- * Create sha256 Hash of a given Buffer.
+ * Create sha256 hash of a given buffer.
  *
- * @param   Buffer UINT8* the input Buffer
- * @param   BufferSize UINT32 size of Buffer
- * @param   PUINT8 HashBytes, 
- * @param   HashBytesSize ULONG Size of the HashBytes.
- * @return  Ctxt PSha256Ctxt initialized Sha256Ctxt
+ * @param   buffer UINT8* the input buffer
+ * @param   buffer_ln SIZE_T size of buffer
+ * @param   hash_bytes PUINT8 The hash bytes buffer
+ * @param   hash_bytes_size UINT16 Size of the hash_bytes buffer.
+ * @return  ctxt PSha256Ctxt initialized Sha256Ctxt
  * @return  NTSTATUS the success state
  */
 NTSTATUS sha256BufferC(
-    _In_ UINT8* Buffer, 
-    _In_ SIZE_T BufferSize, 
-    _Out_ PUINT8 HashBytes, 
-    _In_ UINT16 HashBytesSize, 
-    _In_ PSha256Ctxt Ctxt
+    _In_ PUINT8 buffer, 
+    _In_ SIZE_T buffer_ln, 
+    _Out_ PUINT8 hash_bytes, 
+    _In_ UINT16 hash_bytes_size, 
+    _In_ PSha256Ctxt ctxt
 );
 
 /**
- * Create sha1 Hash of a given file.
- * Using a FILE* to open the file.
+ * Create sha1 hash of a given file.
  *
- * @param   Path char* the input file path
- * @param   HashBytes PUINT8 The input Hash bytes
- * @param   HashSize ULONG Size of the HashBytes.
+ * @param   path PWCHAR the input file path
+ * @param   hash_bytes PUINT8 The hash bytes buffer
+ * @param   hash_bytes_size UINT16 Size of the hash_bytes buffer.
  * @return  NTSTATUS the success state
  */
 NTSTATUS sha1File(
-    _In_ PWCHAR Path, 
-    _Out_ PUINT8 HashBytes, 
-    _In_ UINT16 HashBytesSize
+    _In_ PWCHAR path, 
+    _Out_ PUINT8 hash_bytes, 
+    _In_ UINT16 hash_bytes_size
 );
 
 
 /**
- * Create sha1 Hash of a given file.
- * Using a FILE* to open the file.
+ * Create sha1 hash of a given file.
  *
- * @param   Path char* the input file path
- * @param   HashBytes PUINT8 The input Hash bytes
- * @param   HashSize ULONG Size of the HashBytes.
- * @return  Ctxt PSha1Ctxt initialized Sha1Ctxt
+ * @param   path PWCHAR the input file path
+ * @param   hash_bytes PUINT8 The hash bytes buffer
+ * @param   hash_bytes_size UINT16 Size of the hash_bytes buffer.
+ * @return  ctxt PSha1Ctxt initialized Sha1Ctxt
  * @return  NTSTATUS the success state
  */
 NTSTATUS sha1FileC(
-    _In_ PWCHAR Path, 
-    _Out_ PUINT8 HashBytes, 
-    _In_ UINT16 HashBytesSize, 
-    _In_ PSha1Ctxt Ctxt
+    _In_ PWCHAR path, 
+    _Out_ PUINT8 hash_bytes, 
+    _In_ UINT16 hash_bytes_size, 
+    _In_ PSha1Ctxt ctxt
 );
 
 /**
- * Create sha1 Hash of a given Buffer.
+ * Create sha1 hash of a given buffer.
  *
- * @param   Buffer UINT8* the input Buffer
- * @param   BufferSize UINT32 size of Buffer
- * @param   PUINT8 HashBytes, 
- * @param   HashBytesSize ULONG Size of the HashBytes.
+ * @param   buffer UINT8* the input buffer
+ * @param   buffer_ln SIZE_T size of buffer
+ * @param   hash_bytes PUINT8 The hash bytes buffer
+ * @param   hash_bytes_size UINT16 Size of the hash_bytes buffer.
  * @return  NTSTATUS the success state
  */
 NTSTATUS sha1Buffer(
-    _In_ UINT8* Buffer, 
-    _In_ SIZE_T BufferSize, 
-    _Out_ PUINT8 HashBytes, 
-    _In_ UINT16 HashBytesSize
+    _In_ PUINT8 buffer, 
+    _In_ SIZE_T buffer_ln, 
+    _Out_ PUINT8 hash_bytes, 
+    _In_ UINT16 hash_bytes_size
 );
 
 /**
- * Create sha1 Hash of a given Buffer.
+ * Create sha1 hash of a given buffer.
  *
- * @param   Buffer UINT8* the input Buffer
- * @param   BufferSize UINT32 size of Buffer
- * @param   PUINT8 HashBytes, 
- * @param   HashBytesSize ULONG Size of the HashBytes.
- * @return  Ctxt PSha1Ctxt initialized Sha1Ctxt
+ * @param   buffer UINT8* the input buffer
+ * @param   buffer_ln SIZE_T size of buffer
+ * @param   hash_bytes PUINT8 The hash bytes buffer
+ * @param   hash_bytes_size UINT16 Size of the hash_bytes buffer.
+ * @return  ctxt PSha1Ctxt initialized Sha1Ctxt
  * @return  NTSTATUS the success state
  */
 NTSTATUS sha1BufferC(
-    _In_ UINT8* Buffer, 
-    _In_ SIZE_T BufferSize, 
-    _Out_ PUINT8 HashBytes, 
-    _In_ UINT16 HashBytesSize, 
-    _In_ PSha1Ctxt Ctxt
+    _In_ PUINT8 buffer, 
+    _In_ SIZE_T buffer_ln, 
+    _Out_ PUINT8 hash_bytes, 
+    _In_ UINT16 hash_bytes_size, 
+    _In_ PSha1Ctxt ctxt
 );
 
 
 /**
- * Create md5 Hash of a given file.
- * Using a FILE* to open the file.
+ * Create md5 hash of a given file.
  *
- * @param   Path char* the input file path
- * @param   HashBytes PUINT8 The input Hash bytes
- * @param   HashSize ULONG Size of the HashBytes.
+ * @param   path PWCHAR the input file path
+ * @param   hash_bytes PUINT8 The hash bytes buffer
+ * @param   hash_bytes_size UINT16 Size of the hash_bytes buffer.
  * @return  NTSTATUS the success state
  */
 NTSTATUS md5File(
-    _In_ PWCHAR Path, 
-    _Out_ PUINT8 HashBytes, 
-    _In_ UINT16 HashBytesSize
+    _In_ PWCHAR path, 
+    _Out_ PUINT8 hash_bytes, 
+    _In_ UINT16 hash_bytes_size
 );
 
 
 /**
- * Create md5 Hash of a given file.
- * Using a FILE* to open the file.
+ * Create md5 hash of a given file.
  *
- * @param   Path char* the input file path
- * @param   HashBytes PUINT8 The input Hash bytes
- * @param   HashSize ULONG Size of the HashBytes.
- * @return  Ctxt PMd5Ctxt initialized Sha256Ctxt
+ * @param   path PWCHAR the input file path
+ * @param   hash_bytes PUINT8 The hash bytes buffer
+ * @param   hash_bytes_size UINT16 Size of the hash_bytes buffer.
+ * @return  ctxt PMd5Ctxt initialized Sha256Ctxt
  * @return  NTSTATUS the success state
  */
 NTSTATUS md5FileC(
-    _In_ PWCHAR Path, 
-    _Out_ PUINT8 HashBytes, 
-    _In_ UINT16 HashBytesSize, 
-    _In_ PMd5Ctxt Ctxt
+    _In_ PWCHAR path, 
+    _Out_ PUINT8 hash_bytes, 
+    _In_ UINT16 hash_bytes_size, 
+    _In_ PMd5Ctxt ctxt
 );
 
 /**
- * Create md5 Hash of a given Buffer.
+ * Create md5 hash of a given buffer.
  *
- * @param   Buffer UINT8* the input Buffer
- * @param   BufferSize UINT32 size of Buffer
- * @param   PUINT8 HashBytes, 
- * @param   HashBytesSize ULONG Size of the HashBytes.
+ * @param   buffer UINT8* the input buffer
+ * @param   buffer_ln SIZE_T size of buffer
+ * @param   hash_bytes PUINT8 The hash bytes buffer
+ * @param   hash_bytes_size UINT16 Size of the hash_bytes buffer.
  * @return  NTSTATUS the success state
  */
 NTSTATUS md5Buffer(
-    _In_ UINT8* Buffer, 
-    _In_ SIZE_T BufferSize, 
-    _Out_ PUINT8 HashBytes, 
-    _In_ UINT16 HashBytesSize
+    _In_ PUINT8 buffer, 
+    _In_ SIZE_T buffer_ln, 
+    _Out_ PUINT8 hash_bytes, 
+    _In_ UINT16 hash_bytes_size
 );
 
 /**
- * Create md5 Hash of a given Buffer.
+ * Create md5 hash of a given buffer.
  *
- * @param   Buffer UINT8* the input Buffer
- * @param   BufferSize UINT32 size of Buffer
- * @param   PUINT8 HashBytes, 
- * @param   HashBytesSize ULONG Size of the HashBytes.
- * @return  Ctxt PSha256Ctxt initialized Sha256Ctxt
+ * @param   buffer UINT8* the input buffer
+ * @param   buffer_ln SIZE_T size of buffer
+ * @param   hash_bytes PUINT8 The hash bytes buffer
+ * @param   hash_bytes_size UINT16 Size of the hash_bytes buffer.
+ * @return  ctxt PSha256Ctxt initialized Sha256Ctxt
  * @return  NTSTATUS the success state
  */
 NTSTATUS md5BufferC(
-    _In_ UINT8* Buffer, 
-    _In_ SIZE_T BufferSize, 
-    _Out_ PUINT8 HashBytes, 
-    _In_ UINT16 HashBytesSize, 
-    _In_ PMd5Ctxt Ctxt
+    _In_ PUINT8 buffer, 
+    _In_ SIZE_T buffer_ln, 
+    _Out_ PUINT8 hash_bytes, 
+    _In_ UINT16 hash_bytes_size, 
+    _In_ PMd5Ctxt ctxt
 );
 
 
 /**
- * Convert Hash bytes to ascii string.
+ * Convert hash bytes to ascii string.
  *
- * @param   Hash PUINT8 The input Hash bytes
- * @param   HashSize UINT16 Size of the HashBytes.
- * @param   Output char* The Output Hash string
- * @param   OutputSize UINT16 The outout Buffer size. Should be at least HashSize*2 + 1.
+ * @param   hash PUINT8 The input hash bytes
+ * @param   hash_size UINT16 Size of the hash_bytes.
+ * @param   output char* The output hash string buffer.
+ * @param   output_size UINT16 The output buffer size. Should be at least hash_size*2 + 1.
  */
 void hashToString(
     _In_ const PUINT8 Hash, 
     _In_ UINT16 HashSize, 
-    _Out_ char* Output, 
-    _In_ UINT16 OutputSize
+    _Out_ char* output, 
+    _In_ UINT16 output_size
 );
 
 /**
- * Print the Hash to stdout.
+ * Print the hash to stdout.
  *
- * @param   Hash PUINT8 The input Hash bytes
- * @param   HashSize UINT16 Size of the HashBytes.
- * @param   Prefix char* A Prefix.
- * @param   Postfix char* A Postfix.
+ * @param   hash PUINT8 The input hash bytes
+ * @param   hash_size UINT16 Size of the hash_bytes.
+ * @param   prefix char* A Prefix.
+ * @param   postfix char* A Postfix.
  */
 void printHash(
     _In_ const PUINT8 Hash, 
     _In_ UINT16 HashSize, 
-    _In_ const char* Prefix, 
-    _In_ const char* Postfix
+    _In_ const char* prefix, 
+    _In_ const char* postfix
 );
 
 #ifdef __cplusplus

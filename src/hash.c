@@ -111,11 +111,11 @@ int __cdecl wmain(int argc, WCHAR** argv)
     }
     
 #if HASH_TYPE == 5
-    initHashCtxt(&ctxt, BCRYPT_MD5_ALGORITHM);
+    initHashCtxt(BCRYPT_MD5_ALGORITHM, BCRYPT_HASH_REUSABLE_FLAG, &ctxt);
 #elif HASH_TYPE == 128
-    initHashCtxt(&ctxt, BCRYPT_SHA1_ALGORITHM);
+    initHashCtxt(BCRYPT_SHA1_ALGORITHM, BCRYPT_HASH_REUSABLE_FLAG, &ctxt);
 #elif HASH_TYPE == 256
-    initHashCtxt(&ctxt, BCRYPT_SHA256_ALGORITHM);
+    initHashCtxt(BCRYPT_SHA256_ALGORITHM, BCRYPT_HASH_REUSABLE_FLAG, &ctxt);
 #endif
     
     hStdout = GetStdHandle(STD_OUTPUT_HANDLE);
@@ -152,7 +152,7 @@ int compare(int argc, WCHAR** argv)
 
     if ( argc < 4 )
     {
-        EPrint("You have to provide two pathes or a path and a value to compare!");
+        EPrint("You have to provide two paths or a path and a value to compare!");
         return -1;
     }
     
@@ -244,13 +244,11 @@ clean:
 
 void printColored(CHAR* value, UINT16 attributes)
 {
-    UINT16 wOldColorAttrs;
-    CONSOLE_SCREEN_BUFFER_INFO csbiInfo;
+    CONSOLE_SCREEN_BUFFER_INFO csbiInfo = { 0 };
     GetConsoleScreenBufferInfo(hStdout, &csbiInfo);
-    wOldColorAttrs = csbiInfo.wAttributes;
     SetConsoleTextAttribute(hStdout, attributes);
     printf("%s\n", value);
-    SetConsoleTextAttribute(hStdout, wOldColorAttrs);
+    SetConsoleTextAttribute(hStdout, csbiInfo.wAttributes);
 }
 
 int runList(int argc, WCHAR** argv, ULONG Flags)
@@ -341,7 +339,7 @@ void lPrintHash(_In_ PUINT8 Bytes, _In_ ULONG Size, _In_ WCHAR* File, _In_ PWCHA
     SetConsoleTextAttribute(hStdout, FOREGROUND_INTENSITY);
     wprintf(L"%ws of %s:\n", Type, &File[4]);
     SetConsoleTextAttribute(hStdout, wOldColorAttrs);
-    for (i = 0; i < Size; i++)
+    for ( i = 0; i < Size; i++ )
     {
         wprintf(L"%02x", Bytes[i]);
     }
