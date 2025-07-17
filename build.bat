@@ -66,7 +66,7 @@ set /a bitness=64
 set /a pdb=0
 set /a debug_print=%EP_FLAG%
 set platform=
-set pts=v142
+set pts=v143
 set /a rtl=0
 set /a verbose=0
 
@@ -274,9 +274,7 @@ GOTO :ParseParams
         :: print flags
         set /a "dp=%dpf%&~EP_FLAG"
         set /a "ep=%dpf%&EP_FLAG"
-        if not %ep% == 0 (
-            set /a ep=1
-        )
+        if not %ep% == 0 ( set /a ep=1 )
 
         if %rtl% == 1 (
             set rtl=%conf%
