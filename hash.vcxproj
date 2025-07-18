@@ -53,31 +53,24 @@
   <ItemGroup Label="WrappedTaskItems" />
   
 
-  <PropertyGroup Condition="'$(SubType)'=='md5'">
-    <TargetName>Md5</TargetName>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(SubType)'=='sha1'">
-    <TargetName>Sha1</TargetName>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(SubType)'=='sha256'">
-    <TargetName>Sha256</TargetName>
+  <PropertyGroup>
+    <TargetName>$(SubType)</TargetName>
   </PropertyGroup>
   
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <IntDir>build\64\$(TargetName)\</IntDir>
     <OutDir>build\64\</OutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <IntDir>build\debug\64\$(TargetName)\</IntDir>
     <OutDir>build\debug\64\</OutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-    <IntDir>build\32\$(TargetName)\</IntDir>
     <OutDir>build\32\</OutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <IntDir>build\debug\32\$(TargetName)\</IntDir>
     <OutDir>build\debug\32\</OutDir>
+  </PropertyGroup>
+  <PropertyGroup>
+    <IntDir>$(OutDir)$(TargetName)\</IntDir>
   </PropertyGroup>
   
   <ItemDefinitionGroup>
@@ -151,6 +144,11 @@
     </ClCompile>
   </ItemDefinitionGroup>
 
+  <ItemDefinitionGroup>
+    <ClCompile>
+      <PreprocessorDefinitions>HASH_TYPE_STR=L"$(SubType)";%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+  </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(SubType)'=='md5'">
     <ClCompile>
       <PreprocessorDefinitions>HASH_TYPE=5;%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -164,6 +162,16 @@
   <ItemDefinitionGroup Condition="'$(SubType)'=='sha256'">
     <ClCompile>
       <PreprocessorDefinitions>HASH_TYPE=256;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(SubType)'=='sha384'">
+    <ClCompile>
+      <PreprocessorDefinitions>HASH_TYPE=384;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(SubType)'=='sha512'">
+    <ClCompile>
+      <PreprocessorDefinitions>HASH_TYPE=512;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
   </ItemDefinitionGroup>
   

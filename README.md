@@ -1,4 +1,5 @@
 # Crypto utils
+
 Implementations of some useful crypto utils using the windows CNG API.
 
 ## Contents
@@ -14,7 +15,7 @@ Implementations of some useful crypto utils using the windows CNG API.
 
 ## Build Stuff
 ```bash
-$ ./build.bat [/md5] [/sh1] [/sh2] [/b64] [/aes] [/hash] [/all] [/r] [/d] [/dp <flag>] [/b 32|64] [/rtl] [/pdb] [/pts <platformToolSet>] [/h]
+$ ./build.bat [/md5] [/sh1] [/sh2] [/sh3] [/sh5] [/b64] [/aes] [/hash] [/all] [/r] [/d] [/dp <flag>] [/b 32|64] [/rtl] [/pdb] [/pts <platformToolSet>] [/h]
 ```
 
 
@@ -172,13 +173,13 @@ $ base64 -d -ib 45434177 -pb -of %tmp%\file.txt
 
 
 
-## Md5, Sha1, Sha256
+## Md5, Sha1, Sha256, Sha384, Sha512
 Calculates the hash sum of files or files in folders.
-The hash sum will be md5, sha128 or sha256 depending on the executed binary.
+There are binaries for calculating md5, sha128, sha256, sha384 and sha512.
 
 ### version
-1.0.6  
-Last changed: 13.02.2024  
+1.1.0  
+Last changed: 18.07.2025  
 
 
 ### build
@@ -186,6 +187,8 @@ Last changed: 13.02.2024
 $ ./build.bat /md5 # builds md5.exe
 $ ./build.bat /sh1 # builds sha1.exe
 $ ./build.bat /sh2 # builds sha256.exe
+$ ./build.bat /sh3 # builds sha384.exe
+$ ./build.bat /sh5 # builds sha512.exe
 ```
 
 ### usage
@@ -193,6 +196,8 @@ $ ./build.bat /sh2 # builds sha256.exe
 $ md5 [/h] [/r] [/c] <path>...
 $ sha1 [/h] [/r] [/c] <path>...
 $ sha256 [/h] [/r] [/c] <path>...
+$ sha384 [/h] [/r] [/c] <path>...
+$ sha512 [/h] [/r] [/c] <path>...
 ```
 
 Options:  
@@ -215,12 +220,10 @@ $ sha256 /c file1 file2
 # compare sha256 of file1 with a sha256 value
 $ sha256 /c file1 0011223344...
 ```
-Use `md5` or `sha1` for the other hash types.
+Same goes for the other variants.
 
 
 
 ## Copyright, Credits & Contact 
 Published under [GNU GENERAL PUBLIC LICENSE](LICENSE).
 
-#### author
-- Henning Braun ([henningbraun@gmx.net](mailto:henningbraun@gmx.net)) 

@@ -21,7 +21,13 @@ set /a id+=1
 set /a SH1=%id%
 set /a id+=1
 set /a SH2=%id%
-set /a PROJ_ID_MAX=%id%
+set /a id+=1
+set /a SH3=%id%
+set /a id+=1
+set /a SH5=%id%
+set /a id+=1
+set /a "PROJ_ID_MAX=%id%-1"
+set /a PROJ_COUNT=%id%
 
 :: project file names
 set projects[%AES%]=aes
@@ -29,6 +35,8 @@ set projects[%B64%]=base64
 set projects[%MD5%]=hash
 set projects[%SH1%]=hash
 set projects[%SH2%]=hash
+set projects[%SH3%]=hash
+set projects[%SH5%]=hash
 
 :: sub type names
 set sub_type[%AES%]=aes
@@ -36,6 +44,8 @@ set sub_type[%B64%]=base64
 set sub_type[%MD5%]=md5
 set sub_type[%SH1%]=sha1
 set sub_type[%SH2%]=sha256
+set sub_type[%SH3%]=sha384
+set sub_type[%SH5%]=sha512
 
 :: do compile flags
 set /a cmpl[%AES%]=0
@@ -43,6 +53,8 @@ set /a cmpl[%B64%]=0
 set /a cmpl[%MD5%]=0
 set /a cmpl[%SH1%]=0
 set /a cmpl[%SH2%]=0
+set /a cmpl[%SH3%]=0
+set /a cmpl[%SH5%]=0
 
 :: batch params
 set cmdparams[%AES%]=/aes
@@ -50,6 +62,8 @@ set cmdparams[%B64%]=/b64
 set cmdparams[%MD5%]=/md5
 set cmdparams[%SH1%]=/sh1
 set cmdparams[%SH2%]=/sh2
+set cmdparams[%SH3%]=/sh3
+set cmdparams[%SH5%]=/sh5
 
 
 set proj_dir=.
@@ -185,12 +199,12 @@ GOTO :ParseParams
         FOR /L %%i IN (0 1 %PROJ_ID_MAX%) DO  (
             set /a cmpl[%%i]=1
         )
-    ) else (
-    if %hash% == 1 (
+    ) else if %hash% == 1 (
         set /a cmpl[%MD5%]=1
         set /a cmpl[%SH1%]=1
         set /a cmpl[%SH2%]=1
-    )
+        set /a cmpl[%SH3%]=1
+        set /a cmpl[%SH5%]=1
     )
 
     
@@ -205,9 +219,11 @@ GOTO :ParseParams
     :endLoop
     set /a "s=%s%+%cln%"
     if !s! == 0 (
-        FOR /L %%i IN (0 1 %PROJ_ID_MAX%) DO  (
-            set /a cmpl[%%i]=1
-        )
+        REM FOR /L %%i IN (0 1 %PROJ_ID_MAX%) DO  (
+        REM    set /a cmpl[%%i]=1
+        REM )
+        echo [e] No project set to build!
+        goto usage
     )
 
     if %verbose% == 1 (
@@ -332,8 +348,10 @@ GOTO :ParseParams
     echo /md5: Build Md5 tool.
     echo /sh1: Build Sha1 tool.
     echo /sh2: Build Sha256 tool.
+    echo /sh3: Build Sha384 tool.
+    echo /sh5: Build Sha512 tool.
     echo /all: Build all tools.
-    echo /hash: Build all hash tools: md5, sha1, sha256.
+    echo /hash: Build all hash tools: md5, sha1, sha256, sha384, sha512.
     echo /cln: Clean build folder.
     echo.
     echo Options:

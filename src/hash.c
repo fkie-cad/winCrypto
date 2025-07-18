@@ -12,31 +12,51 @@
 #define FLAG_RECURSIVE (0x1)
 #define FLAG_COMPARE (0x2)
 
-#define TYPE_MD5_STR L"Md5"
-#define TYPE_SHA1_STR L"Sha1"
-#define TYPE_SHA2_STR L"Sha256"
 
+// HASH_TYPE set in hash.vcxproj
+// HASH_TYPE_STR set in hash.vcxproj
 #if HASH_TYPE == 5
-    #define HASH_TYPE_STR TYPE_MD5_STR
-    #define BIN_NAME TYPE_MD5_STR
+    //#define TYPE_MD5_STR L"Md5"
+    //#define HASH_TYPE_STR TYPE_MD5_STR
+    #define BIN_NAME HASH_TYPE_STR
     #define HASH_BYTES_LN MD5_BYTES_LN
     #define HASH_STRING_LN MD5_STRING_LN
+    #define HASH_ALGO_ID BCRYPT_MD5_ALGORITHM
 #elif HASH_TYPE == 128
-    #define HASH_TYPE_STR TYPE_SHA1_STR
-    #define BIN_NAME TYPE_SHA1_STR
+    //#define TYPE_SHA1_STR L"Sha1"
+    //#define HASH_TYPE_STR TYPE_SHA1_STR
+    #define BIN_NAME HASH_TYPE_STR
     #define HASH_BYTES_LN SHA1_BYTES_LN
     #define HASH_STRING_LN SHA1_STRING_LN
+    #define HASH_ALGO_ID BCRYPT_SHA1_ALGORITHM
 #elif HASH_TYPE == 256
-    #define HASH_TYPE_STR TYPE_SHA2_STR
-    #define BIN_NAME TYPE_SHA2_STR
+    //#define TYPE_SHA2_STR L"Sha256"
+    //#define HASH_TYPE_STR TYPE_SHA2_STR
+    #define BIN_NAME HASH_TYPE_STR
     #define HASH_BYTES_LN SHA256_BYTES_LN
     #define HASH_STRING_LN SHA256_STRING_LN
+    #define HASH_ALGO_ID BCRYPT_SHA256_ALGORITHM
+#elif HASH_TYPE == 384
+    //#define TYPE_SHA384_STR L"Sha384"
+    //#define HASH_TYPE_STR TYPE_SHA384_STR
+    #define BIN_NAME HASH_TYPE_STR
+    #define HASH_BYTES_LN SHA384_BYTES_LN
+    #define HASH_STRING_LN SHA384_STRING_LN
+    #define HASH_ALGO_ID BCRYPT_SHA384_ALGORITHM
+#elif HASH_TYPE == 512
+    //#define TYPE_SHA512_STR L"Sha512"
+    //#define HASH_TYPE_STR TYPE_SHA512_STR
+    #define BIN_NAME HASH_TYPE_STR
+    #define HASH_BYTES_LN SHA512_BYTES_LN
+    #define HASH_STRING_LN SHA512_STRING_LN
+    #define HASH_ALGO_ID BCRYPT_SHA512_ALGORITHM
 #else
-    #define HASH_TYPE_STR 0
-    #define BIN_NAME ""
-    #define HASH_BYTES_LN 0
-    #define HASH_STRING_LN 0
-    #error No valid HASH_TYPE set: (5, 128, 256)
+    #define HASH_TYPE_STR L""
+    #define BIN_NAME L""
+    #define HASH_BYTES_LN
+    #define HASH_STRING_LN
+    #define HASH_ALGO_ID
+    #error No valid HASH_TYPE set: (5, 128, 256, 384, 512)
 #endif
 
 typedef struct _FCBParams {
@@ -47,8 +67,8 @@ typedef struct _FCBParams {
 HashCtxt ctxt;
 HANDLE hStdout;
 
-#define BIN_VS "1.0.6"
-#define BIN_LC "13.02.2024"
+#define BIN_VS "1.1.0"
+#define BIN_LC "18.07.2025"
 
 
 int compare(int argc, WCHAR** argv);
@@ -80,7 +100,7 @@ void printHelp()
     wprintf(L" /c: Compare path1 with path2 or with a hash value.\n");
     wprintf(L" /r: Do recursive folder walks.\n");
     wprintf(L" /h: Print this\n");
-    wprintf(L" path: One or more pathes to files or dirs for hash calculation.\n");
+    wprintf(L" path: One or more paths to files or dirs for hash calculation.\n");
 }
 
 int __cdecl wmain(int argc, WCHAR** argv)
@@ -110,13 +130,7 @@ int __cdecl wmain(int argc, WCHAR** argv)
         }
     }
     
-#if HASH_TYPE == 5
-    initHashCtxt(BCRYPT_MD5_ALGORITHM, BCRYPT_HASH_REUSABLE_FLAG, &ctxt);
-#elif HASH_TYPE == 128
-    initHashCtxt(BCRYPT_SHA1_ALGORITHM, BCRYPT_HASH_REUSABLE_FLAG, &ctxt);
-#elif HASH_TYPE == 256
-    initHashCtxt(BCRYPT_SHA256_ALGORITHM, BCRYPT_HASH_REUSABLE_FLAG, &ctxt);
-#endif
+    initHashCtxt(HASH_ALGO_ID, BCRYPT_HASH_REUSABLE_FLAG, &ctxt);
     
     hStdout = GetStdHandle(STD_OUTPUT_HANDLE);
 

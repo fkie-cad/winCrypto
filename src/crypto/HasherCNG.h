@@ -18,6 +18,16 @@
 #define SHA256_STRING_LN (0x40)
 #define SHA256_STRING_BUFFER_LN (0x41)
 
+#define SHA384_BYTES_LN (0x30)
+#define SHA384_STRING_LN (0x60)
+#define SHA384_STRING_BUFFER_LN (0x61)
+
+#define SHA512_BYTES_LN (0x40)
+#define SHA512_STRING_LN (0x80)
+#define SHA512_STRING_BUFFER_LN (0x81)
+
+
+
 #pragma pack(1)
 typedef struct HashCtxt {
     BCRYPT_ALG_HANDLE Alg; // 0
