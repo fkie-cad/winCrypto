@@ -36,11 +36,11 @@ static NTSTATUS createHash(
 
 __forceinline
 NTSTATUS hashFileData(
+    _In_ PHashCtxt ctxt,
     _In_ PUINT8 buffer,
     _In_ ULONG to_read,
     _In_ SIZE_T offset,
-    _In_ HANDLE file, 
-    _In_ PHashCtxt ctxt
+    _In_ HANDLE file
 )
 {
     NTSTATUS status = 0;
@@ -91,7 +91,7 @@ NTSTATUS hashFile(_In_ PWCHAR AlgId, _In_ PWCHAR path, _Out_ PUINT8 hash_bytes, 
         goto clean;
     }
 
-    status = hashFileC(path, hash_bytes, hash_bytes_size, &ctxt);
+    status = hashFileC(&ctxt, path, hash_bytes, hash_bytes_size);
 
 clean:
     cleanHashCtxt(&ctxt);
@@ -100,10 +100,10 @@ clean:
 }
 
 NTSTATUS hashFileC(
+    _In_ PHashCtxt ctxt,
     _In_ PWCHAR path, 
     _Out_ PUINT8 hash_bytes, 
-    _In_ UINT16 hash_bytes_size, 
-    _In_ PHashCtxt ctxt
+    _In_ UINT16 hash_bytes_size
 )
 {
     NTSTATUS status = STATUS_UNSUCCESSFUL;
@@ -153,7 +153,7 @@ NTSTATUS hashFileC(
     rest = (ULONG)(file_size % BUFFER_SIZE);
     for ( i = 0; i < parts; i++ )
     {
-        status = hashFileData(buffer, BUFFER_SIZE, offset, file, ctxt);
+        status = hashFileData(ctxt, buffer, BUFFER_SIZE, offset, file);
         if ( status != 0 )
         {
             EPrint("hashFileData failed (0x%x)!\n", status);
@@ -164,7 +164,7 @@ NTSTATUS hashFileC(
     }
     if ( rest != 0 )
     {
-        status = hashFileData(buffer, rest, offset, file, ctxt);
+        status = hashFileData(ctxt, buffer, rest, offset, file);
         if ( status != 0 )
         {
             EPrint("hashFileData failed (0x%x)!\n", status);
@@ -206,7 +206,7 @@ NTSTATUS hashBuffer(
         goto clean;
     }
 
-    status = hashBufferC(buffer, buffer_ln, hash_bytes, hash_bytes_size, &ctxt);
+    status = hashBufferC(&ctxt, buffer, buffer_ln, hash_bytes, hash_bytes_size);
 
 clean:
     cleanHashCtxt(&ctxt);
@@ -215,11 +215,11 @@ clean:
 }
 
 NTSTATUS hashBufferC(
+    _In_ PHashCtxt ctxt,
     _In_ PUINT8 buffer, 
     _In_ SIZE_T buffer_ln, 
     _Out_ PUINT8 hash_bytes, 
-    _In_ UINT16 hash_bytes_size, 
-    _In_ PHashCtxt ctxt
+    _In_ UINT16 hash_bytes_size
 )
 {
     NTSTATUS status = STATUS_UNSUCCESSFUL;
@@ -282,7 +282,7 @@ clean:
 
 
 //
-// SHA256 
+// SHA256 wrapper
 //
 
 NTSTATUS sha256File(_In_ PWCHAR path, _Out_ PUINT8 hash_bytes, _In_ UINT16 hash_bytes_size)
@@ -290,34 +290,23 @@ NTSTATUS sha256File(_In_ PWCHAR path, _Out_ PUINT8 hash_bytes, _In_ UINT16 hash_
     return hashFile(BCRYPT_SHA256_ALGORITHM, path, hash_bytes, hash_bytes_size);
 }
 
-NTSTATUS sha256FileC(_In_ PWCHAR path, _Out_ PUINT8 hash_bytes, _In_ UINT16 hash_bytes_size, _In_ PSha256Ctxt ctxt)
+NTSTATUS sha256FileC(_In_ PSha256Ctxt ctxt, _In_ PWCHAR path, _Out_ PUINT8 hash_bytes, _In_ UINT16 hash_bytes_size)
 {
-    return hashFileC(path, hash_bytes, hash_bytes_size, ctxt);
+    return hashFileC(ctxt, path, hash_bytes, hash_bytes_size);
 }
 
-NTSTATUS sha256Buffer(
-    _In_ PUINT8 buffer, 
-    _In_ SIZE_T buffer_ln, 
-    _Out_ PUINT8 hash_bytes, 
-    _In_ UINT16 hash_bytes_size
-)
+NTSTATUS sha256Buffer(_In_ PUINT8 buffer, _In_ SIZE_T buffer_ln, _Out_ PUINT8 hash_bytes, _In_ UINT16 hash_bytes_size)
 {
     return hashBuffer(BCRYPT_SHA256_ALGORITHM, buffer, buffer_ln, hash_bytes, hash_bytes_size);
 }
 
-NTSTATUS sha256BufferC(
-    _In_ PUINT8 buffer, 
-    _In_ SIZE_T buffer_ln, 
-    _Out_ PUINT8 hash_bytes, 
-    _In_ UINT16 hash_bytes_size, 
-    _In_ PSha256Ctxt ctxt
-)
+NTSTATUS sha256BufferC(_In_ PSha256Ctxt ctxt, _In_ PUINT8 buffer, _In_ SIZE_T buffer_ln, _Out_ PUINT8 hash_bytes, _In_ UINT16 hash_bytes_size)
 {
-    return hashBufferC(buffer, buffer_ln, hash_bytes, hash_bytes_size, ctxt);
+    return hashBufferC(ctxt, buffer, buffer_ln, hash_bytes, hash_bytes_size);
 }
 
 //
-// SHA1
+// SHA1 wrapper
 //
 
 NTSTATUS sha1File(_In_ PWCHAR path, _Out_ PUINT8 hash_bytes, _In_ UINT16 hash_bytes_size)
@@ -325,30 +314,19 @@ NTSTATUS sha1File(_In_ PWCHAR path, _Out_ PUINT8 hash_bytes, _In_ UINT16 hash_by
     return hashFile(BCRYPT_SHA1_ALGORITHM, path, hash_bytes, hash_bytes_size);
 }
 
-NTSTATUS sha1FileC(_In_ PWCHAR path, _Out_ PUINT8 hash_bytes, _In_ UINT16 hash_bytes_size, _In_ PSha1Ctxt ctxt)
+NTSTATUS sha1FileC(_In_ PSha1Ctxt ctxt, _In_ PWCHAR path, _Out_ PUINT8 hash_bytes, _In_ UINT16 hash_bytes_size)
 {
-    return hashFileC(path, hash_bytes, hash_bytes_size, ctxt);
+    return hashFileC(ctxt, path, hash_bytes, hash_bytes_size);
 }
 
-NTSTATUS sha1Buffer(
-    _In_ PUINT8 buffer, 
-    _In_ SIZE_T buffer_ln, 
-    _Out_ PUINT8 hash_bytes, 
-    _In_ UINT16 hash_bytes_size
-)
+NTSTATUS sha1Buffer(_In_ PUINT8 buffer, _In_ SIZE_T buffer_ln, _Out_ PUINT8 hash_bytes, _In_ UINT16 hash_bytes_size)
 {
     return hashBuffer(BCRYPT_SHA1_ALGORITHM, buffer, buffer_ln, hash_bytes, hash_bytes_size);
 }
 
-NTSTATUS sha1BufferC(
-    _In_ PUINT8 buffer, 
-    _In_ SIZE_T buffer_ln, 
-    _Out_ PUINT8 hash_bytes, 
-    _In_ UINT16 hash_bytes_size, 
-    _In_ PSha1Ctxt ctxt
-)
+NTSTATUS sha1BufferC(_In_ PSha1Ctxt ctxt, _In_ PUINT8 buffer, _In_ SIZE_T buffer_ln, _Out_ PUINT8 hash_bytes, _In_ UINT16 hash_bytes_size)
 {
-    return hashBufferC(buffer, buffer_ln, hash_bytes, hash_bytes_size, ctxt);
+    return hashBufferC(ctxt, buffer, buffer_ln, hash_bytes, hash_bytes_size);
 }
 
 NTSTATUS md5File(_In_ PWCHAR path, _Out_ PUINT8 hash_bytes, _In_ UINT16 hash_bytes_size)
@@ -356,33 +334,30 @@ NTSTATUS md5File(_In_ PWCHAR path, _Out_ PUINT8 hash_bytes, _In_ UINT16 hash_byt
     return hashFile(BCRYPT_MD5_ALGORITHM, path, hash_bytes, hash_bytes_size);
 }
 
-NTSTATUS md5FileC(_In_ PWCHAR path, _Out_ PUINT8 hash_bytes, _In_ UINT16 hash_bytes_size, _In_ PMd5Ctxt ctxt)
+//
+// MD5 wrapper
+//
+
+NTSTATUS md5FileC(_In_ PMd5Ctxt ctxt, _In_ PWCHAR path, _Out_ PUINT8 hash_bytes, _In_ UINT16 hash_bytes_size)
 {
-    return hashFileC(path, hash_bytes, hash_bytes_size, ctxt);
+    return hashFileC(ctxt, path, hash_bytes, hash_bytes_size);
 }
 
-NTSTATUS md5Buffer(
-    _In_ PUINT8 buffer, 
-    _In_ SIZE_T buffer_ln, 
-    _Out_ PUINT8 hash_bytes, 
-    _In_ UINT16 hash_bytes_size
-)
+NTSTATUS md5Buffer(_In_ PUINT8 buffer, _In_ SIZE_T buffer_ln, _Out_ PUINT8 hash_bytes, _In_ UINT16 hash_bytes_size)
 {
     return hashBuffer(BCRYPT_MD5_ALGORITHM, buffer, buffer_ln, hash_bytes, hash_bytes_size);
 }
 
-NTSTATUS md5BufferC(
-    _In_ PUINT8 buffer, 
-    _In_ SIZE_T buffer_ln, 
-    _Out_ PUINT8 hash_bytes, 
-    _In_ UINT16 hash_bytes_size, 
-    _In_ PMd5Ctxt ctxt
-)
+NTSTATUS md5BufferC(_In_ PMd5Ctxt ctxt, _In_ PUINT8 buffer, _In_ SIZE_T buffer_ln, _Out_ PUINT8 hash_bytes, _In_ UINT16 hash_bytes_size)
 {
-    return hashBufferC(buffer, buffer_ln, hash_bytes, hash_bytes_size, ctxt);
+    return hashBufferC(ctxt, buffer, buffer_ln, hash_bytes, hash_bytes_size);
 }
 
 
+
+//
+// context initialization
+// 
 
 NTSTATUS initSha1(_Out_ PSha1Ctxt ctxt)
 {

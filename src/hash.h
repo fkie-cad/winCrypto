@@ -21,11 +21,3 @@ VOID lPrintHash(
     _In_ WCHAR* File,
     _In_ PWCHAR Type
 );
-
-// in HasherCNG.c
-NTSTATUS hashFileC(
-    _In_ PWCHAR Path, 
-    _Out_ PUINT8 HashBytes, 
-    _In_ UINT16 HashBytesSize, 
-    _In_ PHashCtxt Ctxt
-);

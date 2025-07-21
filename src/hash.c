@@ -53,9 +53,9 @@
 #else
     #define HASH_TYPE_STR L""
     #define BIN_NAME L""
-    #define HASH_BYTES_LN
-    #define HASH_STRING_LN
-    #define HASH_ALGO_ID
+    #define HASH_BYTES_LN 0
+    #define HASH_STRING_LN 0
+    #define HASH_ALGO_ID 0
     #error No valid HASH_TYPE set: (5, 128, 256, 384, 512)
 #endif
 
@@ -189,7 +189,7 @@ int compare(int argc, WCHAR** argv)
         return -2;
     }
 
-    hashFileC(full_path1, hash1_bytes, (UINT16)ctxt.HashSize, &ctxt);
+    hashFileC(&ctxt, full_path1, hash1_bytes, (UINT16)ctxt.HashSize);
     lPrintHash(hash1_bytes, ctxt.HashSize, full_path1, HASH_TYPE_STR);
 
     ptr = argv[3];
@@ -205,7 +205,7 @@ int compare(int argc, WCHAR** argv)
     
     if ( ntFileExists(full_path2) )
     {
-        hashFileC(full_path2, hash2_bytes, (UINT16)ctxt.HashSize, &ctxt);
+        hashFileC(&ctxt, full_path2, hash2_bytes, (UINT16)ctxt.HashSize);
         lPrintHash(hash2_bytes, ctxt.HashSize, full_path2, HASH_TYPE_STR);
         if ( memcmp(hash1_bytes, hash2_bytes, ctxt.HashSize) == 0 )
         {
@@ -313,7 +313,7 @@ void fileCB(wchar_t* file, wchar_t* base_name, void* p)
     UINT8 hash_bytes[HASH_BYTES_LN];
     RtlZeroMemory(hash_bytes, HASH_BYTES_LN);
     DPrintW(L"fileCB: %ws\n", file);
-    INT s = hashFileC(file, hash_bytes, (UINT16)ctxt.HashSize, &ctxt);
+    INT s = hashFileC(&ctxt, file, hash_bytes, (UINT16)ctxt.HashSize);
     if ( s != 0 )
         return;
     lPrintHash(hash_bytes, ctxt.HashSize, file, HASH_TYPE_STR);

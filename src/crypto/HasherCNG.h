@@ -182,10 +182,10 @@ NTSTATUS hashFile(
  * @return  NTSTATUS the success state
  */
 NTSTATUS hashFileC(
+    _In_ PHashCtxt ctxt,
     _In_ PWCHAR path, 
     _Out_ PUINT8 hash_bytes, 
-    _In_ UINT16 hash_bytes_size, 
-    _In_ PHashCtxt ctxt
+    _In_ UINT16 hash_bytes_size
 );
 
 /**
@@ -217,11 +217,11 @@ NTSTATUS hashBuffer(
  * @return  NTSTATUS the success state
  */
 NTSTATUS hashBufferC(
+    _In_ PHashCtxt ctxt,
     _In_ PUINT8 buffer, 
     _In_ SIZE_T buffer_ln, 
     _Out_ PUINT8 hash_bytes, 
-    _In_ UINT16 hash_bytes_size, 
-    _In_ PHashCtxt ctxt
+    _In_ UINT16 hash_bytes_size
 );
 
 /**
@@ -249,10 +249,10 @@ NTSTATUS sha256File(
  * @return  NTSTATUS the success state
  */
 NTSTATUS sha256FileC(
+    _In_ PSha256Ctxt ctxt,
     _In_ PWCHAR path, 
     _Out_ PUINT8 hash_bytes, 
-    _In_ UINT16 hash_bytes_size, 
-    _In_ PSha256Ctxt ctxt
+    _In_ UINT16 hash_bytes_size
 );
 
 /**
@@ -282,11 +282,11 @@ NTSTATUS sha256Buffer(
  * @return  NTSTATUS the success state
  */
 NTSTATUS sha256BufferC(
+    _In_ PSha256Ctxt ctxt,
     _In_ PUINT8 buffer, 
     _In_ SIZE_T buffer_ln, 
     _Out_ PUINT8 hash_bytes, 
-    _In_ UINT16 hash_bytes_size, 
-    _In_ PSha256Ctxt ctxt
+    _In_ UINT16 hash_bytes_size
 );
 
 /**
@@ -314,10 +314,10 @@ NTSTATUS sha1File(
  * @return  NTSTATUS the success state
  */
 NTSTATUS sha1FileC(
+    _In_ PSha1Ctxt ctxt,
     _In_ PWCHAR path, 
     _Out_ PUINT8 hash_bytes, 
-    _In_ UINT16 hash_bytes_size, 
-    _In_ PSha1Ctxt ctxt
+    _In_ UINT16 hash_bytes_size
 );
 
 /**
@@ -347,11 +347,11 @@ NTSTATUS sha1Buffer(
  * @return  NTSTATUS the success state
  */
 NTSTATUS sha1BufferC(
+    _In_ PSha1Ctxt ctxt,
     _In_ PUINT8 buffer, 
     _In_ SIZE_T buffer_ln, 
     _Out_ PUINT8 hash_bytes, 
-    _In_ UINT16 hash_bytes_size, 
-    _In_ PSha1Ctxt ctxt
+    _In_ UINT16 hash_bytes_size
 );
 
 
@@ -380,10 +380,10 @@ NTSTATUS md5File(
  * @return  NTSTATUS the success state
  */
 NTSTATUS md5FileC(
+    _In_ PMd5Ctxt ctxt,
     _In_ PWCHAR path, 
     _Out_ PUINT8 hash_bytes, 
-    _In_ UINT16 hash_bytes_size, 
-    _In_ PMd5Ctxt ctxt
+    _In_ UINT16 hash_bytes_size
 );
 
 /**
@@ -413,11 +413,11 @@ NTSTATUS md5Buffer(
  * @return  NTSTATUS the success state
  */
 NTSTATUS md5BufferC(
+    _In_ PMd5Ctxt ctxt,
     _In_ PUINT8 buffer, 
     _In_ SIZE_T buffer_ln, 
     _Out_ PUINT8 hash_bytes, 
-    _In_ UINT16 hash_bytes_size, 
-    _In_ PMd5Ctxt ctxt
+    _In_ UINT16 hash_bytes_size
 );
 
 
