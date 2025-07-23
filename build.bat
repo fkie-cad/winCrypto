@@ -26,6 +26,12 @@ set /a SH3=%id%
 set /a id+=1
 set /a SH5=%id%
 set /a id+=1
+set /a SH32=%id%
+set /a id+=1
+set /a SH33=%id%
+set /a id+=1
+set /a SH35=%id%
+set /a id+=1
 set /a "PROJ_ID_MAX=%id%-1"
 set /a PROJ_COUNT=%id%
 
@@ -37,6 +43,9 @@ set projects[%SH1%]=hash
 set projects[%SH2%]=hash
 set projects[%SH3%]=hash
 set projects[%SH5%]=hash
+set projects[%SH32%]=hash
+set projects[%SH33%]=hash
+set projects[%SH35%]=hash
 
 :: sub type names
 set sub_type[%AES%]=aes
@@ -46,6 +55,9 @@ set sub_type[%SH1%]=sha1
 set sub_type[%SH2%]=sha256
 set sub_type[%SH3%]=sha384
 set sub_type[%SH5%]=sha512
+set sub_type[%SH32%]=sha3-256
+set sub_type[%SH33%]=sha3-384
+set sub_type[%SH35%]=sha3-512
 
 :: do compile flags
 set /a cmpl[%AES%]=0
@@ -55,6 +67,9 @@ set /a cmpl[%SH1%]=0
 set /a cmpl[%SH2%]=0
 set /a cmpl[%SH3%]=0
 set /a cmpl[%SH5%]=0
+set /a cmpl[%SH32%]=0
+set /a cmpl[%SH33%]=0
+set /a cmpl[%SH35%]=0
 
 :: batch params
 set cmdparams[%AES%]=/aes
@@ -64,6 +79,21 @@ set cmdparams[%SH1%]=/sh1
 set cmdparams[%SH2%]=/sh2
 set cmdparams[%SH3%]=/sh3
 set cmdparams[%SH5%]=/sh5
+set cmdparams[%SH32%]=/sh32
+set cmdparams[%SH33%]=/sh33
+set cmdparams[%SH35%]=/sh35
+
+:: type
+set /a hash_type[%AES%]=0
+set /a hash_type[%B64%]=0
+set /a hash_type[%MD5%]=5
+set /a hash_type[%SH1%]=128
+set /a hash_type[%SH2%]=256
+set /a hash_type[%SH3%]=384
+set /a hash_type[%SH5%]=512
+set /a hash_type[%SH32%]=3256
+set /a hash_type[%SH33%]=3384
+set /a hash_type[%SH35%]=3512
 
 
 set proj_dir=.
@@ -77,13 +107,18 @@ set /a debug=0
 set /a release=0
 
 set /a bitness=64
-set /a pdb=0
 set /a debug_print=%EP_FLAG%
 set platform=
 set pts=v143
-set /a rtl=0
 set /a verbose=0
 
+:: add pdb
+set /a OPT_FLAG_PDB=0x1
+:: add rtl
+set /a OPT_FLAG_RTL=0x2
+:: add ico
+set /a OPT_FLAG_ICO=0x4
+SET /a opt_flags=0
 
 
 GOTO :ParseParams
@@ -140,11 +175,15 @@ GOTO :ParseParams
     )
 
     IF /i "%~1"=="/pdb" (
-        SET /a pdb=1
+        SET /a "opt_flags=opt_flags|OPT_FLAG_PDB"
         goto reParseParams
     )
     IF /i "%~1"=="/rtl" (
-        SET /a rtl=1
+        SET /a "opt_flags=opt_flags|OPT_FLAG_RTL"
+        goto reParseParams
+    )
+    IF /i "%~1"=="/ico" (
+        SET /a "opt_flags=opt_flags|OPT_FLAG_ICO"
         goto reParseParams
     )
 
@@ -163,10 +202,9 @@ GOTO :ParseParams
     IF /i "%~1"=="/v" (
         SET /a verbose=1
         goto reParseParams
-    ) ELSE (
-    IF /i "%~1" neq "" (
+    ) ELSE IF /i "%~1" neq "" (
         echo Unknown option : "%~1"
-    ))
+    )
     
     :reParseParams
     SHIFT
@@ -205,9 +243,11 @@ GOTO :ParseParams
         set /a cmpl[%SH2%]=1
         set /a cmpl[%SH3%]=1
         set /a cmpl[%SH5%]=1
+        set /a cmpl[%SH32%]=1
+        set /a cmpl[%SH33%]=1
+        set /a cmpl[%SH35%]=1
     )
 
-    
     :: check if a project is set
     set /a s=0
     FOR /L %%i IN (0 1 %PROJ_ID_MAX%) DO  (
@@ -219,24 +259,27 @@ GOTO :ParseParams
     :endLoop
     set /a "s=%s%+%cln%"
     if !s! == 0 (
-        REM FOR /L %%i IN (0 1 %PROJ_ID_MAX%) DO  (
-        REM    set /a cmpl[%%i]=1
-        REM )
         echo [e] No project set to build!
         goto usage
     )
 
     if %verbose% == 1 (
+        set /a "pdb=opt_flags&OPT_FLAG_PDB"
+        set /a "rtl=opt_flags&OPT_FLAG_RTL"
+        set /a "ico=opt_flags&OPT_FLAG_ICO"
+
         FOR /L %%i IN (0 1 %PROJ_ID_MAX%) DO  (
-            echo !projects[%%i]!: !cmpl[%%i]!
+            echo !sub_type[%%i]!: !cmpl[%%i]!
         )
         echo.
         echo debug: %debug%
         echo release: %release%
         echo bitness: %bitness%
-        echo pdb: %pdb%
         echo dprint: %debug_print%
-        echo rtl: %rtl%
+        echo opt_flags: !opt_flags!
+        echo   pdb: !pdb!
+        echo   rtl: !rtl!
+        echo   ico: !ico!
         echo pts: %pts%
     )
     
@@ -269,9 +312,10 @@ GOTO :ParseParams
         set proj_id=%~2
         set proj=%proj_dir%\%proj_name%%proj_ftype%
         set sub_type=!sub_type[%proj_id%]!
+        set hash_type=!hash_type[%proj_id%]!
 
-        if %debug%==1 call :buildEx %proj%,%platform%,Debug,%debug_print%,%rtl%,%pdb%,%pts%,%sub_type%
-        if %release%==1 call :buildEx %proj%,%platform%,Release,%debug_print%,%rtl%,%pdb%,%pts%,%sub_type%
+        if %debug%==1 call :buildEx %proj%,%platform%,Debug,%debug_print%,%opt_flags%,%pts%,%sub_type%,%hash_type%
+        if %release%==1 call :buildEx %proj%,%platform%,Release,%debug_print%,%opt_flags%,%pts%,%sub_type%,%hash_type%
     ENDLOCAL
     
     EXIT /B %ERRORLEVEL%
@@ -282,20 +326,27 @@ GOTO :ParseParams
         set platform=%~2
         set conf=%~3
         set /a dpf=%~4
-        set /a rtl=%~5
-        set /a pdb=%~6
-        set pts=%~7
-        set sub_type=%~8
+        set /a opt_flags=%~5
+        set pts=%~6
+        set sub_type=%~7
+        set /a hash_type=%~8
         
         :: print flags
         set /a "dp=%dpf%&~EP_FLAG"
         set /a "ep=%dpf%&EP_FLAG"
-        if not %ep% == 0 ( set /a ep=1 )
-
-        if %rtl% == 1 (
-            set rtl=%conf%
-        ) else (
+        if %ep% NEQ 0 ( set /a ep=1 )
+        
+        :: option flags
+        set /a "pdb=%opt_flags%&%OPT_FLAG_PDB%"
+        set /a "rtl=%opt_flags%&%OPT_FLAG_RTL%" && set /a "rtl=rtl>>1"
+        set /a "ico=%opt_flags%&%OPT_FLAG_ICO%" && set /a "ico=ico>>2"
+        
+        
+        :: run time libs
+        if %rtl% EQU 0 (
             set rtl=None
+        ) else (
+            set rtl=%conf%
         )
 
         :: pdbs
@@ -314,11 +365,13 @@ GOTO :ParseParams
             echo  - ErrorPrint=%ep%
             echo  - pdb=%pdb%
             echo  - pts=%pts%
+            echo  - ico=%ico%
             echo  - sub_type=%sub_type%
+            echo  - hash_type=%hash_type%
             echo.
         )
         
-        msbuild %proj% /p:Platform=%platform% /p:Configuration=%conf% /p:DebugPrint=%dp% /p:ErrorPrint=%ep% /p:RuntimeLib=%rtl% /p:PDB=%pdb% /p:PlatformToolset=%pts% /p:SubType=%sub_type%
+        msbuild %proj% /p:Platform=%platform% /p:Configuration=%conf% /p:DebugPrint=%dp% /p:ErrorPrint=%ep% /p:RuntimeLib=%rtl% /p:PDB=%pdb% /p:PlatformToolset=%pts% /p:SubType=%sub_type% /p:Icon=%ico% /p:HashType=%hash_type%
         echo.
         echo ----------------------------------------------------
         echo.
@@ -350,6 +403,9 @@ GOTO :ParseParams
     echo /sh2: Build Sha256 tool.
     echo /sh3: Build Sha384 tool.
     echo /sh5: Build Sha512 tool.
+    echo /sh32: Build Sha3-256 tool.
+    echo /sh33: Build Sha3-384 tool.
+    echo /sh35: Build Sha3-512 tool.
     echo /all: Build all tools.
     echo /hash: Build all hash tools: md5, sha1, sha256, sha384, sha512.
     echo /cln: Clean build folder.

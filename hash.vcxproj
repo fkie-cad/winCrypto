@@ -149,29 +149,9 @@
       <PreprocessorDefinitions>HASH_TYPE_STR=L"$(SubType)";%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
   </ItemDefinitionGroup>
-  <ItemDefinitionGroup Condition="'$(SubType)'=='md5'">
+  <ItemDefinitionGroup Condition="'$(HashType)'!=''">
     <ClCompile>
-      <PreprocessorDefinitions>HASH_TYPE=5;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-    </ClCompile>
-  </ItemDefinitionGroup>
-  <ItemDefinitionGroup Condition="'$(SubType)'=='sha1'">
-    <ClCompile>
-      <PreprocessorDefinitions>HASH_TYPE=128;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-    </ClCompile>
-  </ItemDefinitionGroup>
-  <ItemDefinitionGroup Condition="'$(SubType)'=='sha256'">
-    <ClCompile>
-      <PreprocessorDefinitions>HASH_TYPE=256;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-    </ClCompile>
-  </ItemDefinitionGroup>
-  <ItemDefinitionGroup Condition="'$(SubType)'=='sha384'">
-    <ClCompile>
-      <PreprocessorDefinitions>HASH_TYPE=384;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-    </ClCompile>
-  </ItemDefinitionGroup>
-  <ItemDefinitionGroup Condition="'$(SubType)'=='sha512'">
-    <ClCompile>
-      <PreprocessorDefinitions>HASH_TYPE=512;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>HASH_TYPE=$(HashType);%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
   </ItemDefinitionGroup>
   
@@ -181,6 +161,10 @@
     <ClCompile Include="src\files\FilesW.c" />
     <ClCompile Include="src\shared\Fifo.c" />
   </ItemGroup>
+  
+  <!-- <ItemGroup Condition="'$(Icon)'=='1'"> -->
+    <!-- <ResourceCompile Include="res\hash.rc" /> -->
+  <!-- </ItemGroup> -->
 
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   
