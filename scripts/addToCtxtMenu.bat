@@ -12,7 +12,7 @@ set /a MODE_NONE=0
 set /a MODE_ADD=1
 set /a MODE_DEL=2
 
-set verbose=0
+set /a verbose=0
 set /a mode=%MODE_ADD%
 set ico=
 
@@ -47,7 +47,7 @@ GOTO :ParseParams
         goto reParseParams
     )
     IF "%~1"=="/v" (
-        SET verbose=1
+        SET /a verbose=1
         goto reParseParams
     )
     
@@ -71,20 +71,19 @@ GOTO :ParseParams
         exit /b 0
     )
 
-    if [%verbose%]==[1] (
+    if %verbose% == 1 (
         echo bin_path=%bin_path%
         echo label=%label%
     )
     
     if %mode% EQU %MODE_ADD% (
         call :addEntry
-    ) else (
-    if %mode% EQU %MODE_DEL% (
+    ) else if %mode% EQU %MODE_DEL% (
         call :deleteEntry
     ) else (
         echo [e] Unknown mode!
         exit /b 1
-    ))
+    )
     
     :exitMain
     endlocal
@@ -93,39 +92,48 @@ GOTO :ParseParams
 
 :addEntry
 setlocal
-    reg add HKEY_CLASSES_ROOT\*\shell\%label%.Group /v MUIVerb /t REG_SZ /d "%label%" /f
-    reg add HKEY_CLASSES_ROOT\*\shell\%label%.Group /v SubCommands /t REG_SZ /d "md5.cmd;sha1.cmd;sha256.cmd;sha384.cmd;sha512.cmd;" /f
+    REM set "group_key=HKEY_CURRENT_USER\SOFTWARE\Classes\*\shell\%label%.Group"
+    set "group_key=HKEY_CLASSES_ROOT\*\shell\%label%.Group"
+    set "cmd_key=hklm\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\CommandStore\shell"
+    
+    reg add "%group_key%" /v MUIVerb /t REG_SZ /d "%label%" /f
+    reg add "%group_key%" /v SubCommands /t REG_SZ /d "md5.cmd;sha1.cmd;sha256.cmd;sha384.cmd;sha512.cmd;" /f
     if ["%ico%"] NEQ [""] (
-        reg add "HKEY_CLASSES_ROOT\*\shell\%label%.Group" /v Icon /t REG_SZ /d "%ico%"
+        reg add ""%group_key%"" /v Icon /t REG_SZ /d "%ico%"
     )
 
-    reg add "hklm\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\CommandStore\shell\md5.cmd" /t REG_SZ /d "md5" /f
-    reg add "hklm\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\CommandStore\shell\md5.cmd\Command" /t REG_SZ /d "cmd /k %bin_path%\md5.exe \"%1\"" /f
+    reg add "%cmd_key%\md5.cmd" /t REG_SZ /d "md5" /f
+    reg add "%cmd_key%\md5.cmd\Command" /t REG_SZ /d "cmd /k %bin_path%\md5.exe \"%1\"" /f
 
-    reg add "hklm\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\CommandStore\shell\sha1.cmd" /t REG_SZ /d "sha1" /f
-    reg add "hklm\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\CommandStore\shell\sha1.cmd\Command" /t REG_SZ /d "cmd /k %bin_path%\sha1.exe \"%1\"" /f
+    reg add "%cmd_key%\sha1.cmd" /t REG_SZ /d "sha1" /f
+    reg add "%cmd_key%\sha1.cmd\Command" /t REG_SZ /d "cmd /k %bin_path%\sha1.exe \"%1\"" /f
 
-    reg add "hklm\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\CommandStore\shell\sha256.cmd" /t REG_SZ /d "sha256" /f
-    reg add "hklm\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\CommandStore\shell\sha256.cmd\Command" /t REG_SZ /d "cmd /k %bin_path%\sha256.exe \"%1\"" /f
+    reg add "%cmd_key%\sha256.cmd" /t REG_SZ /d "sha256" /f
+    reg add "%cmd_key%\sha256.cmd\Command" /t REG_SZ /d "cmd /k %bin_path%\sha256.exe \"%1\"" /f
 
-    reg add "hklm\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\CommandStore\shell\sha384.cmd" /t REG_SZ /d "sha384" /f
-    reg add "hklm\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\CommandStore\shell\sha384.cmd\Command" /t REG_SZ /d "cmd /k %bin_path%\sha384.exe \"%1\"" /f
+    reg add "%cmd_key%\sha384.cmd" /t REG_SZ /d "sha384" /f
+    reg add "%cmd_key%\sha384.cmd\Command" /t REG_SZ /d "cmd /k %bin_path%\sha384.exe \"%1\"" /f
 
-    reg add "hklm\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\CommandStore\shell\sha512.cmd" /t REG_SZ /d "sha512" /f
-    reg add "hklm\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\CommandStore\shell\sha512.cmd\Command" /t REG_SZ /d "cmd /k %bin_path%\sha512.exe \"%1\"" /f
+    reg add "%cmd_key%\sha512.cmd" /t REG_SZ /d "sha512" /f
+    reg add "%cmd_key%\sha512.cmd\Command" /t REG_SZ /d "cmd /k %bin_path%\sha512.exe \"%1\"" /f
 
     endlocal
     exit /B %ERRORLEVEL%
 
+
 :deleteEntry
 setlocal
-    reg DELETE "HKEY_CLASSES_ROOT\*\shell\%label%.Group" /f
+    REM set "group_key=HKEY_CURRENT_USER\SOFTWARE\Classes\*\shell\%label%.Group"
+    set "group_key=HKEY_CLASSES_ROOT\*\shell\%label%.Group"
+    set "cmd_key=hklm\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\CommandStore\shell"
     
-    reg DELETE "hklm\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\CommandStore\shell\md5.cmd" /f
-    reg DELETE "hklm\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\CommandStore\shell\sha1.cmd" /f
-    reg DELETE "hklm\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\CommandStore\shell\sha256.cmd" /f
-    reg DELETE "hklm\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\CommandStore\shell\sha384.cmd" /f
-    reg DELETE "hklm\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\CommandStore\shell\sha512.cmd" /f
+    reg DELETE "%group_key%" /f
+    
+    reg DELETE "%cmd_key%\md5.cmd" /f
+    reg DELETE "%cmd_key%\sha1.cmd" /f
+    reg DELETE "%cmd_key%\sha256.cmd" /f
+    reg DELETE "%cmd_key%\sha384.cmd" /f
+    reg DELETE "%cmd_key%\sha512.cmd" /f
 
     endlocal
     exit /B %ERRORLEVEL%
